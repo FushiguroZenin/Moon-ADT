@@ -200,7 +200,16 @@
               if (!result.snapshot) throw new Error('The paired PC returned no system snapshot.');
               renderSnapshot(result.snapshot); setText('runtime-status', 'Paired and connected'); document.documentElement.classList.add('paired-device-connected');
               return;
-            } catch (error) { setText('runtime-status', 'Paired PC unavailable'); setText('health-detail', error.message); }
+            } catch (error) {
+              const message = error?.message || 'Moon could not retrieve live evidence from the paired PC.';
+              setText('runtime-status', 'Paired PC unavailable');
+              setText('health-detail', message);
+              setText('system-state', 'temporarily unavailable.');
+              setText('welcome-copy', 'Moon is paired with your PC, but it could not retrieve a live snapshot. ' + message);
+              setText('storage-detail', 'Live request did not complete');
+              setText('memory-detail', 'Live request did not complete');
+              setText('cpu-detail', 'Live request did not complete');
+            }
             finally { remoteStatusLoading = false; }
             return;
           }
