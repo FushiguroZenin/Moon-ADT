@@ -184,7 +184,7 @@
           await new Promise((resolve) => setTimeout(resolve, 1500));
           const response = await window.moonClient.nativeFetch(`${relay}/v1/browser/commands/${command.command_id}`, {headers:{Authorization:`Bearer ${session}`}});
           const result = await response.json(); if (!response.ok) throw new Error(result.detail || 'Moon could not retrieve the request result.');
-          if (result.state === 'completed') return result.result;
+          if (result.state === 'completed') return result.result?.result || result.result || result;
         }
         throw new Error('Moon is waiting for the paired PC to check in. Keep Dera1.4 running and try again.');
       }
@@ -267,7 +267,7 @@
           await new Promise((resolve) => setTimeout(resolve, 1500));
           const response = await window.moonClient.nativeFetch(`${relay}/v1/browser/commands/${command.command_id}`, {headers:{Authorization:`Bearer ${session}`}});
           const result = await response.json(); if (!response.ok) throw new Error(result.detail || 'Moon could not retrieve the answer.');
-          if (result.state === 'completed') return {result:result.result, conversation:result.result.conversation};
+          if (result.state === 'completed') { const payload=result.result?.result || result.result || result; return {result:payload, conversation:result.result?.conversation || payload.conversation}; }
         }
         throw new Error('Moon is waiting for the paired PC to check in. Keep Dera1.4 running and try again.');
       }
