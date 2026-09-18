@@ -17,4 +17,4 @@ RUN pip install --no-cache-dir ".[api]" \
 USER moon
 EXPOSE 8787
 
-CMD ["uvicorn", "dera.relay.service:app", "--host", "0.0.0.0", "--port", "8787", "--proxy-headers"]
+CMD ["sh", "-c", "exec uvicorn dera.relay.service:app --host 0.0.0.0 --port ${PORT:-8787} --proxy-headers"]
