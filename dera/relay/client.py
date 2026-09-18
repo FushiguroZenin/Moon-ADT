@@ -39,7 +39,7 @@ class OutboundRelayClient:
             store.save_token(token)
         envelope = signed_envelope(device_id, "runtime.heartbeat", {"runtime": "moon", "scope": "local-only"}, store.secret())
         request = Request(
-            config["relay_url"].rstrip("/") + "/v1/devices/events",
+            config["relay_url"].rstrip("/") + f"/v1/devices/{device_id}/events",
             data=json.dumps(envelope).encode(),
             headers={"Content-Type": "application/json", "Authorization": f"Bearer {token}"},
             method="POST",
