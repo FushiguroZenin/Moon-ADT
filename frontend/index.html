@@ -132,6 +132,7 @@
       const byId = (id) => document.getElementById(id);
       const webConfig = window.MOON_WEB_CONFIG || { mode: 'local' };
       const pairedWebShell = webConfig.mode === 'paired-web' && !window.moonClient.baseUrl;
+      let pairedBrowserSession = sessionStorage.getItem('moon_browser_session');
       document.documentElement.classList.toggle('paired-web-shell', pairedWebShell);
       const setText = (id, value) => byId(id).textContent = value;
       const pct = (value) => Number.isFinite(Number(value)) ? `${Math.round(Number(value))}%` : '—';
@@ -149,6 +150,7 @@
           const response = await window.moonClient.nativeFetch(`${webConfig.relayBaseUrl.replace(/\/$/, '')}/v1/browser-pairing/complete`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,client_name:clientName})});
           const result = await response.json();
           if (!response.ok) throw new Error(result.detail || 'Pairing could not be completed.');
+          pairedBrowserSession = result.browser_session;
           sessionStorage.setItem('moon_browser_session', result.browser_session);
           sessionStorage.setItem('moon_paired_device', result.device_id);
           status.textContent = `Paired with ${result.device_id}. This browser can now request read-only evidence from your Moon PC.`;
@@ -175,7 +177,7 @@
         setText('welcome-copy', needsAttention ? 'Moon found a condition worth your attention. Review the evidence, then decide what should happen next.' : 'Moon is quietly observing your system and will explain the details when something needs your attention.');
       }
       async function pairedReadOnly(commandType, payload = {}) {
-        const relay = webConfig.relayBaseUrl?.replace(/\/$/, ''); const session = sessionStorage.getItem('moon_browser_session');
+        const relay = webConfig.relayBaseUrl?.replace(/\/$/, ''); const session = pairedBrowserSession || sessionStorage.getItem('moon_browser_session');
         if (!relay || !session) throw new Error('Pair this browser with Moon on your PC before requesting live evidence.');
         const headers = {'Content-Type':'application/json','Authorization':`Bearer ${session}`};
         const queued = await window.moonClient.nativeFetch(`${relay}/v1/browser/commands`, {method:'POST',headers,body:JSON.stringify({command_type:commandType,payload})});
@@ -190,7 +192,7 @@
       }
       async function refreshStatus() {
         if (pairedWebShell) {
-          const session = sessionStorage.getItem('moon_browser_session');
+          const session = pairedBrowserSession || sessionStorage.getItem('moon_browser_session');
           if (session && webConfig.relayBaseUrl && !remoteStatusLoading) {
             remoteStatusLoading = true; setText('runtime-status', 'Requesting evidence');
             try {
@@ -257,7 +259,7 @@
         proposals.slice(0, 3).forEach((proposal) => { const card = document.createElement('article'); card.className = 'proposal-card'; const title = document.createElement('b'); title.textContent = proposal.path ? `Move ${proposal.path.split('\\').pop()}` : 'Move proposal'; const detail = document.createElement('small'); const size = Number(proposal.reclaimable_gb); detail.textContent = `Estimated effect: ${Number.isFinite(size) ? size.toFixed(2) + ' GB' : 'size unavailable'}. No files have been moved.`; const button = document.createElement('button'); button.type = 'button'; button.textContent = 'Review permission'; button.addEventListener('click', () => openProposal(proposal)); card.append(title, detail, button); container.append(card); }); byId('chat-thread').append(container); }
       function openChat() { const chat = byId('chat-modal'); chat.classList.remove('minimized'); if (!chat.open) chat.showModal(); byId('chat-question').focus(); }
       async function pairedQuestion(request) {
-        const relay = webConfig.relayBaseUrl?.replace(/\/$/, ''); const session = sessionStorage.getItem('moon_browser_session');
+        const relay = webConfig.relayBaseUrl?.replace(/\/$/, ''); const session = pairedBrowserSession || sessionStorage.getItem('moon_browser_session');
         if (!relay || !session) throw new Error('Pair this browser with Moon on your PC before starting a conversation.');
         const headers = {'Content-Type':'application/json','Authorization':`Bearer ${session}`};
         const queued = await window.moonClient.nativeFetch(`${relay}/v1/browser/questions`, {method:'POST',headers,body:JSON.stringify({request})});
