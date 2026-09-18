@@ -1,0 +1,20 @@
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    MOON_RELAY_DATABASE=/var/lib/moon/moon-relay.db
+
+WORKDIR /srv/moon
+COPY pyproject.toml README.md ./
+COPY dera ./dera
+
+RUN pip install --no-cache-dir ".[api]" \
+    && useradd --create-home --uid 10001 moon \
+    && mkdir -p /var/lib/moon \
+    && chown -R moon:moon /srv/moon /var/lib/moon
+
+USER moon
+EXPOSE 8787
+
+CMD ["uvicorn", "dera.relay.service:app", "--host", "0.0.0.0", "--port", "8787", "--proxy-headers"]

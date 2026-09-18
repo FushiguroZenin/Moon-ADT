@@ -1,0 +1,16 @@
+services:
+  moon-relay:
+    build:
+      context: .
+      dockerfile: Dockerfile.relay
+    environment:
+      MOON_WEB_ORIGIN: ${MOON_WEB_ORIGIN:?Set the exact HTTPS Moon web origin}
+      MOON_RELAY_DATABASE: /var/lib/moon/moon-relay.db
+    volumes:
+      - moon-relay-data:/var/lib/moon
+    ports:
+      - "127.0.0.1:8787:8787"
+    restart: unless-stopped
+
+volumes:
+  moon-relay-data:

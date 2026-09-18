@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Moon — Powered by Dera1.4</title>
+    <link rel="stylesheet" href="dashboard.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <aside class="rail" aria-label="Primary navigation">
+        <a class="brand" href="#overview"><span class="brand-moon"></span><span>moon</span></a>
+        <span class="powered">powered by Dera1.4</span>
+        <nav class="navigation">
+          <a class="selected" href="#overview" aria-label="Overview"><i>⌂</i><span>Overview</span></a>
+          <a href="#activity" aria-label="Activity"><i>◷</i><span>Activity</span></a>
+          <a href="#system" aria-label="System"><i>◌</i><span>System</span></a>
+          <a href="#settings" aria-label="Settings"><i>⚙</i><span>Settings</span></a>
+        </nav>
+        <section class="runtime-card">
+          <span class="live-dot"></span>
+          <div><b>Local runtime</b><small id="runtime-status">Connecting…</small></div>
+        </section>
+        <footer><span>Moon v0.1</span><a href="#docs">Docs</a></footer>
+      </aside>
+
+      <section class="workspace" id="overview">
+        <header class="topbar">
+          <div class="eyebrow"><span class="live-dot"></span><span>Dera1.4 is observing your computer</span><span class="monitor-badge" id="monitor-badge">Monitoring ready</span></div>
+        </header>
+
+        <section class="welcome">
+          <div class="ambient-moon" aria-hidden="true"><span></span></div>
+          <p class="kicker">GOOD <span id="day-part">EVENING</span></p>
+          <h1>Your computer is <em id="system-state">being observed.</em></h1>
+          <p class="welcome-copy" id="welcome-copy">Moon is collecting a current picture of your system so it can explain what matters.</p>
+        </section>
+
+        <section class="conversation" id="activity" aria-label="Moon system evidence">
+          <div class="section-heading"><div><p class="kicker">SYSTEM EVIDENCE</p><h2>Current conditions</h2></div><button class="text-button" id="refresh-button">Refresh analysis <span>↗</span></button></div>
+          <div class="evidence-grid" id="system">
+            <button class="evidence-card storage" data-metric="storage"><span class="card-top"><span class="card-icon">▣</span><span class="severity" id="storage-label">CHECKING</span></span><span class="card-name">Storage</span><strong id="storage-value">—</strong><small id="storage-detail">Waiting for local runtime</small><span class="meter"><span id="storage-meter"></span></span></button>
+            <button class="evidence-card" data-metric="memory"><span class="card-top"><span class="card-icon">⌁</span><span class="severity quiet">LIVE</span></span><span class="card-name">Memory</span><strong id="memory-value">—</strong><small id="memory-detail">Waiting for local runtime</small><span class="meter cool"><span id="memory-meter"></span></span></button>
+            <button class="evidence-card" data-metric="cpu"><span class="card-top"><span class="card-icon">◒</span><span class="severity quiet">LIVE</span></span><span class="card-name">Processor</span><strong id="cpu-value">—</strong><small id="cpu-detail">Waiting for local runtime</small><span class="meter cool"><span id="cpu-meter"></span></span></button>
+          </div>
+        </section>
+
+        <section class="ask-moon" id="ask-moon"><span class="ask-icon">✦</span><label for="moon-question">Ask Moon anything about your computer</label><input id="moon-question" placeholder="Why is my computer slow?" /><button id="ask-button">Ask Moon <span>↑</span></button></section>
+        <section class="mobile-companion" aria-label="Moon mobile companion">
+          <span class="mobile-companion-orb">☾</span>
+          <div><p class="kicker">MOON COMPANION</p><h2>Your PC stays in charge.</h2><p>Use this space to review a paired computer, follow activity, and talk with Moon. Dera1.4 continues to run locally on your PC and always asks before a change.</p><form class="web-pairing-form" id="web-pairing-form"><input id="web-pairing-code" autocomplete="one-time-code" placeholder="Enter PC pairing code" /><input id="web-client-name" maxlength="80" placeholder="This device name" /><button type="submit">Pair this device</button></form><p class="web-pairing-status" id="web-pairing-status">Generate a one-time code in Moon on your PC, then enter it here.</p><div><a href="#docs">Connection guide</a><a href="#permissions">Permissions</a></div></div>
+        </section>
+        <footer class="app-footer"><a href="#github">GitHub</a><a href="#docs">Docs</a><a href="#permissions">Permissions</a><span></span><b>moon</b><small>powered by Dera1.4</small></footer>
+      </section>
+
+      <section class="activity-page" id="activity-page" aria-label="Moon activity history">
+        <header class="activity-top"><div><p class="kicker">LOCAL TASK HISTORY</p><h1>Activity</h1><p>Investigations and follow-ups saved on this computer.</p></div><button class="back-overview" id="back-overview">← Overview</button></header>
+        <div class="activity-summary"><span class="live-dot"></span><p>Moon records what it observed, what it proposed, and what was verified. It does not treat a chat message as permission to change your computer.</p></div>
+        <section class="task-list" id="task-list"><p class="empty-tasks">Loading local task history…</p></section>
+      </section>
+
+      <section class="system-page" id="system-page" aria-label="Live system evidence">
+        <header class="activity-top"><div><p class="kicker">LIVE LOCAL SNAPSHOT</p><h1>System</h1><p id="system-updated">Connecting to Dera1.4…</p></div><button class="back-overview" id="system-back">← Overview</button></header>
+        <div class="system-summary" id="system-summary"></div>
+        <section class="system-grid">
+          <article class="system-panel"><div class="panel-head"><div><p class="kicker">MEMORY CONSUMERS</p><h2>Largest processes</h2></div><button data-chat-question="Show me the largest memory consumers.">Investigate</button></div><div id="process-list" class="process-list"><p>Loading processes…</p></div></article>
+          <article class="system-panel"><div class="panel-head"><div><p class="kicker">STORAGE EVIDENCE</p><h2>Large folders</h2></div><button data-chat-question="Show me the Downloads evidence.">Investigate</button></div><div id="folder-list" class="process-list"><p>Loading folders…</p></div></article>
+          <article class="system-panel"><div class="panel-head"><div><p class="kicker">STARTUP</p><h2>Startup applications</h2></div><button data-chat-question="Why does my computer take so long to start?">Investigate</button></div><div id="startup-list" class="process-list"><p>Loading startup entries…</p></div></article>
+          <article class="system-panel"><div class="panel-head"><div><p class="kicker">CONNECTION</p><h2>Network and uptime</h2></div></div><div id="connection-list" class="process-list"><p>Loading system state…</p></div></article>
+        </section>
+      </section>
+
+      <section class="settings-page" id="settings-page" aria-label="Moon local settings">
+        <header class="activity-top"><div><p class="kicker">LOCAL CONTROL PLANE</p><h1>Settings</h1><p>How Moon connects, observes, and protects this computer.</p></div><button class="back-overview" id="settings-back">← Overview</button></header>
+        <section class="settings-grid" id="settings-grid"><p class="empty-tasks">Loading local settings…</p></section>
+        <section class="monitoring-panel"><div><p class="kicker">LOCAL MONITORING</p><h2>Check for meaningful changes</h2><p id="monitor-description">Moon only checks when you ask it to. No background scheduler or notifications are enabled.</p></div><button id="monitor-check">Check now</button><div class="monitor-controls"><label><input type="checkbox" id="monitor-enabled" /> Enable while Moon is running</label><select id="monitor-interval" aria-label="Monitoring interval"><option value="5">Every 5 minutes</option><option value="15">Every 15 minutes</option><option value="30" selected>Every 30 minutes</option><option value="60">Every hour</option></select><button id="monitor-save">Save monitoring</button></div><div class="monitor-results" id="monitor-results">No manual check has run in this browser session.</div></section>
+        <section class="pairing-panel"><div><p class="kicker">DEVICE PAIRING</p><h2>Connect a future Moon client</h2><p id="pairing-description">Generate a short-lived code on this computer. Pairing is local-only until secure outbound transport is enabled.</p></div><button id="pairing-create">Generate pairing code</button><div class="pairing-code" id="pairing-code">No active code</div><div class="pairing-form"><input id="pairing-client" placeholder="Client name, e.g. Moon Web" /><input id="pairing-input" placeholder="Enter pairing code" /><button id="pairing-complete">Complete pairing</button></div><div class="pairing-result" id="pairing-result">No clients paired in this browser session.</div></section>
+        <section class="relay-panel"><div><p class="kicker">OUTBOUND RELAY</p><h2>Future paired web connection</h2><p id="relay-description">Disabled. Moon never opens an inbound port or exposes this computer publicly.</p></div><label class="relay-toggle"><input type="checkbox" id="relay-enabled" /> Enable outbound relay</label><input id="relay-url" placeholder="https://relay.example.com" /><button id="relay-save">Save relay settings</button><div class="relay-result" id="relay-result">A relay service has not been configured.</div><div class="relay-sessions" id="relay-sessions">No web browsers are paired.</div></section>
+      </section>
+
+      <section class="public-page" id="docs-page" aria-label="Moon documentation">
+        <header class="public-hero"><p class="kicker">MOON DOCUMENTATION</p><h1>A local agent that explains before it acts.</h1><p>Moon combines Dera1.4’s deterministic computer tools with a local language model. It observes, investigates, proposes, asks, and verifies.</p><button class="back-overview public-back">← Back to Moon</button></header>
+        <div class="public-grid"><article><h2>Get connected</h2><p>Start Moon’s local runtime, then open the Moon address in your browser. The dashboard talks to Dera1.4 on the same computer.</p><code>python run_api.py</code></article><article><h2>Install locally</h2><p>Moon installs as a local Windows runtime. Diagnostics work immediately; local AI is an optional setup choice.</p></article><article><h2>Local AI with Ollama</h2><p>Choose <b>Enable local AI</b> during setup for more natural conversation and clearer evidence explanations. Moon detects Ollama, guides the installation, and then downloads its recommended private model only after you confirm.</p><p>The model remains on the PC. It needs several GB of disk space and uses additional RAM while active, so diagnostics-only mode is a good lighter option.</p></article><article><h2>What Moon can do</h2><ul><li>Read system status and investigate performance</li><li>Inspect Downloads and large folders</li><li>Review startup applications and crash evidence</li><li>Monitor meaningful local changes</li><li>Give safe manual guidance for sensitive tasks</li></ul></article><article><h2>Using Moon</h2><ol><li>Ask a plain-language question.</li><li>Review the evidence behind its answer.</li><li>Follow a recommendation or ask a follow-up.</li><li>For sensitive work, follow Moon’s recommended manual steps.</li></ol></article><article><h2>Local connection guide</h2><p>The current Moon interface is local. Future web access will pair with the local runtime through an outbound relay, so a computer is never directly exposed to the public internet.</p></article><article><h2>Known limits</h2><p>Moon only supports its listed safe investigations. Results reflect the available local evidence, not a guaranteed root cause. It does not silently repair, delete, replace, or alter files.</p></article></div>
+      </section>
+
+      <section class="public-page" id="permissions-page" aria-label="Moon permissions">
+        <header class="public-hero permission-hero"><p class="kicker">PERMISSIONS AND CONTROL</p><h1>You stay in control of every computer change.</h1><p>Moon can observe and explain automatically. It cannot alter files, settings, or applications simply because a user asked in chat.</p><button class="back-overview permission-back">← Back to Moon</button></header>
+        <div class="permission-flow"><span>Observe</span><i>→</i><span>Investigate</span><i>→</i><span>Propose</span><i>→</i><b>Approve</b><i>→</i><b>Execute</b><i>→</i><span>Verify</span></div>
+        <div class="public-grid permissions-grid"><article><h2>What Moon may do automatically</h2><p>Moon and Dera1.4 may collect read-only system evidence: performance values, storage use, process information, startup entries, event-log evidence, and folder sizes inside its allowed scope.</p></article><article><h2>What always needs permission</h2><p>Moves and copies require a specific proposal, an existing destination, a dry-run preview, explicit approval, and a separate execution action. Each operation is verified afterward.</p></article><article><h2>What Moon does not do</h2><p>Moon does not silently delete, overwrite, replace, close applications, alter settings, or execute unapproved commands. Those capabilities are not part of the current product flow.</p></article><article><h2>How Dera1.4 protects the boundary</h2><p>Dera1.4 chooses the allowed tool, validates paths and destinations, records proposal state, and verifies the result. The language model explains evidence but cannot bypass these controls.</p></article><article class="wide"><h2>What granting access means</h2><p>Allowing Moon to run locally gives Dera1.4 visibility into the information needed for the investigation you request, such as system state, selected folders, or Windows event logs. A future paired web connection would route requests to this local runtime; it would not give a website unrestricted access to a computer. Only grant access on a computer you trust, review every proposal, and keep the local runtime and model environment secure.</p></article></div>
+      </section>
+
+      <aside class="insights" aria-label="System insights">
+        <header><p class="kicker">SYSTEM PULSE</p><h2>At a glance</h2></header>
+        <article class="pulse-card"><div class="pulse-ring" id="health-ring"><span id="health-score">—</span></div><div><b id="health-title">System status</b><small id="health-detail">Awaiting a live snapshot</small></div></article>
+        <section class="timeline"><div class="timeline-head"><span>Memory over time</span><strong id="memory-quick">—</strong></div><div class="sparkline" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><small>Live snapshot</small></section>
+        <section class="permission" id="findings"><div class="permission-icon">⌁</div><div><p class="kicker">PERMISSION BOUNDARY</p><b>Moon will ask first</b><small>It can investigate and explain automatically. It cannot change files or settings without your approval.</small></div></section>
+        <section class="recent"><div class="recent-head"><b>Recent activity</b><a href="#activity">View all</a></div><p><span class="tiny-dot"></span>System observation started <time>Now</time></p><p><span class="tiny-dot dim"></span>Local runtime connected <time>Today</time></p></section>
+      </aside>
+    </main>
+
+    <dialog class="detail-modal" id="metric-modal" aria-labelledby="modal-title">
+      <button class="modal-close" id="modal-close" aria-label="Close details">×</button>
+      <p class="kicker" id="modal-kicker">LIVE SYSTEM EVIDENCE</p>
+      <h2 id="modal-title">Storage</h2>
+      <p class="modal-lead" id="modal-lead"></p>
+      <div class="modal-stat" id="modal-stat"></div>
+      <section class="modal-section"><p class="kicker">WHAT MOON CAN CONFIRM</p><p id="modal-evidence"></p></section>
+      <section class="modal-section recommendation"><p class="kicker">RECOMMENDED NEXT STEP</p><p id="modal-recommendation"></p></section>
+      <p class="modal-boundary">Moon has not made any changes. Any action that changes your computer requires your approval.</p>
+    </dialog>
+
+    <dialog class="chat-modal" id="chat-modal" aria-labelledby="chat-title">
+      <header class="chat-header"><div class="chat-identity"><span class="message-orb">☾</span><div><b id="chat-title">Moon</b><small><span class="live-dot"></span> Local conversation</small></div></div><div class="chat-controls"><button id="minimize-chat" aria-label="Minimize chat">—</button><button id="close-chat" aria-label="Close and end conversation">×</button></div></header>
+      <div class="chat-thread" id="chat-thread" aria-live="polite"></div>
+      <form class="chat-composer" id="chat-form"><label class="sr-only" for="chat-question">Ask Moon</label><input id="chat-question" autocomplete="off" placeholder="Ask a follow-up…" /><button type="submit">Send <span>↑</span></button></form>
+    </dialog>
+
+    <dialog class="proposal-modal" id="proposal-modal" aria-labelledby="proposal-title">
+      <button class="modal-close" id="proposal-close" aria-label="Close proposal">×</button>
+      <p class="kicker">CONTROLLED MOVE</p><h2 id="proposal-title">Review proposal</h2><p class="modal-lead" id="proposal-description"></p>
+      <div class="proposal-state" id="proposal-state">Proposed</div>
+      <label class="proposal-label" for="proposal-action">Action</label><select id="proposal-action"><option value="move">Move — frees space at the source</option><option value="copy">Copy — keeps the original</option></select>
+      <label class="proposal-label" for="proposal-destination">Destination folder</label><input id="proposal-destination" placeholder="C:\Users\YourName\Documents\Archived Downloads" />
+      <p class="proposal-result" id="proposal-result">Choose an existing folder, then run a dry preview. No files will move during preview.</p>
+      <div class="proposal-actions"><button id="proposal-preview">Preview move</button><button id="proposal-approve" disabled>Approve move</button><button id="proposal-execute" disabled>Execute and verify</button></div>
+      <p class="modal-boundary">Approval and execution are separate. Moon will not copy or move anything until you explicitly approve, then explicitly execute this exact proposal.</p>
+    </dialog>
+
+    <script src="moon-web-config.js"></script>
+    <script src="moon-client.js"></script>
+    <script>
+      const byId = (id) => document.getElementById(id);
+      const webConfig = window.MOON_WEB_CONFIG || { mode: 'local' };
+      const pairedWebShell = webConfig.mode === 'paired-web' && !window.moonClient.baseUrl;
+      document.documentElement.classList.toggle('paired-web-shell', pairedWebShell);
+      const setText = (id, value) => byId(id).textContent = value;
+      const pct = (value) => Number.isFinite(Number(value)) ? `${Math.round(Number(value))}%` : '—';
+      const setMeter = (id, value) => byId(id).style.width = `${Math.min(100, Math.max(0, Number(value) || 0))}%`;
+      function timeOfDay() { const h = new Date().getHours(); return h < 12 ? 'MORNING' : h < 18 ? 'AFTERNOON' : 'EVENING'; }
+      setText('day-part', timeOfDay());
+      async function pairThisBrowser(event) {
+        event.preventDefault();
+        const status = byId('web-pairing-status');
+        const code = byId('web-pairing-code').value.trim();
+        const clientName = byId('web-client-name').value.trim() || 'Moon web';
+        if (!webConfig.relayBaseUrl) { status.textContent = 'Moon web pairing will be available when the production relay URL is configured.'; return; }
+        if (!code) { status.textContent = 'Enter the one-time code from Moon on your PC.'; return; }
+        try {
+          const response = await window.moonClient.nativeFetch(`${webConfig.relayBaseUrl.replace(/\/$/, '')}/v1/browser-pairing/complete`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,client_name:clientName})});
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.detail || 'Pairing could not be completed.');
+          sessionStorage.setItem('moon_browser_session', result.browser_session);
+          sessionStorage.setItem('moon_paired_device', result.device_id);
+          status.textContent = `Paired with ${result.device_id}. This browser can now use the future authenticated Moon companion connection.`;
+          byId('web-pairing-form').reset();
+        } catch (error) { status.textContent = error.message || 'Pairing could not be completed.'; }
+      }
+      byId('web-pairing-form').addEventListener('submit', pairThisBrowser);
+      let latestStatus = null;
+      let activeTaskId = null;
+      let selectedProposal = null;
+      let awaitingCrashApplication = false;
+      let remoteStatusLoading = false;
+      function renderSnapshot(s) {
+        latestStatus = s; const cpu = s.cpu || {}, memory = s.memory || {}, storage = s.storage || {};
+        const storageUsed = Number(storage.usage_percent), memoryUsed = Number(memory.usage_percent), cpuUsed = Number(cpu.usage_percent), free = Number(storage.free_gb);
+        setText('cpu-value', pct(cpuUsed)); setText('memory-value', pct(memoryUsed)); setText('storage-value', pct(storageUsed));
+        setText('cpu-detail', `${cpu.logical_cores || '—'} logical cores`); setText('memory-detail', Number.isFinite(memory.available_gb) ? `${memory.available_gb.toFixed(1)} GB available` : 'Live observation'); setText('storage-detail', Number.isFinite(free) ? `${free.toFixed(1)} GB available` : 'Live observation');
+        setMeter('cpu-meter', cpuUsed); setMeter('memory-meter', memoryUsed); setMeter('storage-meter', storageUsed);
+        const needsAttention = storageUsed >= 90 || memoryUsed >= 85;
+        setText('health-score', needsAttention ? 'Needs\nreview' : 'Healthy'); setText('health-title', needsAttention ? 'Needs attention' : 'Looking good'); setText('health-detail', needsAttention ? 'Moon found conditions to review.' : 'No urgent issues in this snapshot.');
+        byId('health-ring').classList.toggle('warning', needsAttention); setText('system-state', needsAttention ? 'asking for attention.' : 'awake.');
+        setText('storage-label', storageUsed >= 90 ? 'ATTENTION' : 'HEALTHY'); byId('storage-label').classList.toggle('quiet', storageUsed < 90);
+        setText('welcome-copy', needsAttention ? 'Moon found a condition worth your attention. Review the evidence, then decide what should happen next.' : 'Moon is quietly observing your system and will explain the details when something needs your attention.');
+      }
+      async function pairedReadOnly(commandType, payload = {}) {
+        const relay = webConfig.relayBaseUrl?.replace(/\/$/, ''); const session = sessionStorage.getItem('moon_browser_session');
+        if (!relay || !session) throw new Error('Pair this browser with Moon on your PC before requesting live evidence.');
+        const headers = {'Content-Type':'application/json','Authorization':`Bearer ${session}`};
+        const queued = await window.moonClient.nativeFetch(`${relay}/v1/browser/commands`, {method:'POST',headers,body:JSON.stringify({command_type:commandType,payload})});
+        const command = await queued.json(); if (!queued.ok) throw new Error(command.detail || 'Moon could not queue the read-only request.');
+        for (let attempt = 0; attempt < 20; attempt += 1) {
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+          const response = await window.moonClient.nativeFetch(`${relay}/v1/browser/commands/${command.command_id}`, {headers:{Authorization:`Bearer ${session}`}});
+          const result = await response.json(); if (!response.ok) throw new Error(result.detail || 'Moon could not retrieve the request result.');
+          if (result.state === 'completed') return result.result;
+        }
+        throw new Error('Moon is waiting for the paired PC to check in. Keep Dera1.4 running and try again.');
+      }
+      async function refreshStatus() {
+        if (pairedWebShell) {
+          const session = sessionStorage.getItem('moon_browser_session');
+          if (session && webConfig.relayBaseUrl && !remoteStatusLoading) {
+            remoteStatusLoading = true; setText('runtime-status', 'Requesting evidence');
+            try {
+              const result = await pairedReadOnly('system_status');
+              if (!result.snapshot) throw new Error('The paired PC returned no system snapshot.');
+              renderSnapshot(result.snapshot); setText('runtime-status', 'Paired and connected'); document.documentElement.classList.add('paired-device-connected');
+              return;
+            } catch (error) { setText('runtime-status', 'Paired PC unavailable'); setText('health-detail', error.message); }
+            finally { remoteStatusLoading = false; }
+            return;
+          }
+          setText('runtime-status', 'Awaiting pairing');
+          setText('system-state', 'ready to connect.');
+          setText('welcome-copy', 'This Moon web space is ready for a paired Dera1.4 runtime. Your computer stays private until you connect it through Moon’s authenticated relay.');
+          setText('health-score', 'Pair\nMoon');
+          setText('health-title', 'No device connected');
+          setText('health-detail', webConfig.connectionLabel || 'Awaiting a paired Moon runtime');
+          setText('storage-label', 'PAIRED');
+          setText('storage-value', '—'); setText('memory-value', '—'); setText('cpu-value', '—');
+          setText('storage-detail', 'Connect a device to see evidence'); setText('memory-detail', 'Local data stays on your computer'); setText('cpu-detail', 'No remote observation yet');
+          return;
+        }
+        setText('runtime-status', 'Observing');
+        try {
+          const res = await fetch('/status'); if (!res.ok) throw new Error(); const s = await res.json();
+          renderSnapshot(s);
+          setText('runtime-status', 'Connected');
+        } catch (_) { setText('runtime-status', 'Offline'); }
+      }
+      byId('refresh-button').addEventListener('click', refreshStatus);
+      function number(value, digits = 1) { return Number.isFinite(Number(value)) ? Number(value).toFixed(digits) : 'an unavailable amount'; }
+      function explainFinding(finding) {
+        const evidence = finding.evidence || {};
+        if (finding.code === 'cpu.normal') return `Moon measured CPU use at ${number(evidence.usage_percent)}%. The processor was not heavily occupied in this snapshot, so this reading does not point to CPU pressure as the cause of slowness.`;
+        if (finding.code === 'memory.high') return `Memory use was ${number(evidence.usage_percent)}%, with ${number(evidence.available_gb)} GB available. This can make switching between applications less responsive, but this snapshot alone does not identify which application is responsible.`;
+        if (finding.code === 'memory.normal') return `Memory use was ${number(evidence.usage_percent)}%, with ${number(evidence.available_gb)} GB available. This reading is within Moon’s normal range for the current snapshot.`;
+        if (finding.code === 'storage.low_space') return `The system drive was ${number(evidence.usage_percent)}% full, with ${number(evidence.free_gb)} GB free. Low free space can affect updates, temporary files, and general system breathing room.`;
+        if (finding.code === 'process.largest_memory') return `${evidence.name || 'A process'} was the largest measured memory consumer at ${number(evidence.memory_mb)} MB. This identifies a current observation; it does not mean the process is faulty.`;
+        if (finding.code === 'storage.largest_user_directory') { const dirs = evidence.directories || []; return dirs.length ? `Moon found these large user-accessible locations: ${dirs.slice(0,3).map((dir) => `${dir.path} (${number(dir.size_gb)} GB)`).join(', ')}. Moon has only inspected their sizes.` : 'Moon found large user-accessible directories, but the exact directory list was not included in this response.'; }
+        return finding.title ? `${finding.title}. ${finding.recommendation || 'Moon recorded this as evidence in the latest investigation.'}` : 'Moon recorded this evidence in the latest investigation.';
+      }
+      function detailsFor(findings) { return findings.length ? findings.map(explainFinding).join(' ') : 'Moon collected the current system snapshot. No additional diagnostic finding was returned for this request.'; }
+      function addMessage(kind, text, findings = [], details = '', nextStep = '') {
+        const card = document.createElement('article'); card.className = kind === 'user' ? 'user-message' : 'moon-message';
+        const mark = document.createElement('div'); mark.className = kind === 'user' ? 'user-orb' : 'message-orb'; mark.textContent = kind === 'user' ? 'You' : '☾';
+        const body = document.createElement('div'); const copy = document.createElement('p'); copy.textContent = text; body.append(copy);
+        if (findings.length || details || nextStep) { const evidence = document.createElement('div'); evidence.className = 'message-evidence'; findings.slice(0, 3).forEach((finding) => { const item = document.createElement('button'); item.type = 'button'; item.textContent = finding.title || finding.code || 'Evidence'; item.addEventListener('click', () => addMessage('moon', explainFinding(finding))); evidence.append(item); }); if (details) { const item = document.createElement('button'); item.type = 'button'; item.textContent = 'Details'; item.addEventListener('click', () => addMessage('moon', details)); evidence.append(item); } if (nextStep) { const item = document.createElement('button'); item.type = 'button'; item.textContent = 'Recommended next step'; item.addEventListener('click', () => addMessage('moon', nextStep)); evidence.append(item); } body.append(evidence); }
+        card.append(mark, body); byId('chat-thread').append(card); card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      function summarizeReply(payload) {
+        const result = payload.result || {}; const task = result.task || {}; const findings = task.findings || [];
+        if (payload.conversation) { const reply = payload.conversation; const evidence = reply.evidence || findings; return { text: reply.reply, findings: evidence, details: detailsFor(evidence), next: `${reply.next_step || ''} Moon needs your explicit permission before it can carry out any change.`.trim() }; }
+        if (result.explanation) { const explanation = result.explanation; const evidence = explanation.evidence || findings; return { text: explanation.interpretation || 'Moon prepared an evidence-backed explanation.', findings: evidence, details: detailsFor(evidence), next: `${explanation.next_step || 'Ask Moon for more detail about any finding.'} Moon needs your explicit permission before it can carry out any change.` }; }
+        if (result.data && result.findings) { return { text: 'Moon inspected startup applications using a read-only local check.', findings: result.findings, details: detailsFor(result.findings), next: 'Review startup entries before changing anything. Moon can prepare a review-only proposal, but it needs your explicit permission before it can carry out any change.' }; }
+        if (task.result?.summary) return { text: task.result.summary, findings, details: detailsFor(findings), next: `${task.result.recommended_next_step || 'No change is recommended from this snapshot.'} Moon needs your explicit permission before it can carry out any change.` };
+        if (result.snapshot) { const s=result.snapshot, cpu=s.cpu||{}, memory=s.memory||{}, storage=s.storage||{}; return { text:'I captured a current local system snapshot.', findings:[], details:`CPU use is ${number(cpu.usage_percent)}%. Memory use is ${number(memory.usage_percent)}% with ${number(memory.available_gb)} GB available. System storage is ${number(storage.usage_percent)}% used with ${number(storage.free_gb)} GB free.`, next:'Ask Moon to investigate a specific concern, such as slowness or Downloads. Moon will gather more evidence before suggesting any action.' }; }
+        if (result.inspection) return { text: 'I inspected Downloads. The evidence is ready for review; I have not moved or removed anything.', findings: [], details:'Moon inspected user-accessible folder sizes only. It did not open, delete, move, or change any files.', next:'Review the discovered folders. If you want to free space, Moon can prepare a move proposal for your review and permission.' };
+        if (result.proposals) return { text: `I prepared ${result.proposals.length} move proposal${result.proposals.length === 1 ? '' : 's'} for review. They are not approved and cannot execute from this screen.`, findings: [], details:'Each proposal is a suggested move only. Moon has not changed any files.', next:'Choose whether you want to review a proposal. Moon needs your explicit approval and a destination before a move can be considered.' };
+        return { text: result.message || 'I completed the allowed read-only check.', findings: [], details:'Moon did not perform an action outside its current safe task allow-list.', next:'Ask for a supported read-only investigation, or ask Moon to explain what it can do.' };
+      }
+      function openProposal(proposal) { selectedProposal = proposal; setText('proposal-title', `Review ${proposal.path.split('\\').pop()}`); setText('proposal-description', proposal.reason || 'Moon prepared this proposal from current storage evidence.'); setText('proposal-state', 'Proposed'); setText('proposal-result', 'Choose Move or Copy, select an existing folder, then run a dry preview. No files will change during preview.'); byId('proposal-action').value = 'move'; byId('proposal-destination').value = ''; byId('proposal-approve').disabled = true; byId('proposal-execute').disabled = true; byId('proposal-modal').showModal(); }
+      function addProposalCards(proposals) {
+        const container = document.createElement('section'); container.className = 'proposal-cards';
+        proposals.slice(0, 3).forEach((proposal) => { const card = document.createElement('article'); card.className = 'proposal-card'; const title = document.createElement('b'); title.textContent = proposal.path ? `Move ${proposal.path.split('\\').pop()}` : 'Move proposal'; const detail = document.createElement('small'); const size = Number(proposal.reclaimable_gb); detail.textContent = `Estimated effect: ${Number.isFinite(size) ? size.toFixed(2) + ' GB' : 'size unavailable'}. No files have been moved.`; const button = document.createElement('button'); button.type = 'button'; button.textContent = 'Review permission'; button.addEventListener('click', () => openProposal(proposal)); card.append(title, detail, button); container.append(card); }); byId('chat-thread').append(container); }
+      function openChat() { const chat = byId('chat-modal'); chat.classList.remove('minimized'); if (!chat.open) chat.showModal(); byId('chat-question').focus(); }
+      async function pairedQuestion(request) {
+        const relay = webConfig.relayBaseUrl?.replace(/\/$/, ''); const session = sessionStorage.getItem('moon_browser_session');
+        if (!relay || !session) throw new Error('Pair this browser with Moon on your PC before starting a conversation.');
+        const headers = {'Content-Type':'application/json','Authorization':`Bearer ${session}`};
+        const queued = await window.moonClient.nativeFetch(`${relay}/v1/browser/questions`, {method:'POST',headers,body:JSON.stringify({request})});
+        const command = await queued.json(); if (!queued.ok) throw new Error(command.detail || 'Moon could not queue that question.');
+        if (command.intent === 'unknown') return {result:{message:command.message}};
+        for (let attempt = 0; attempt < 20; attempt += 1) {
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+          const response = await window.moonClient.nativeFetch(`${relay}/v1/browser/commands/${command.command_id}`, {headers:{Authorization:`Bearer ${session}`}});
+          const result = await response.json(); if (!response.ok) throw new Error(result.detail || 'Moon could not retrieve the answer.');
+          if (result.state === 'completed') return {result:result.result, conversation:result.result.conversation};
+        }
+        throw new Error('Moon is waiting for the paired PC to check in. Keep Dera1.4 running and try again.');
+      }
+      async function sendQuestion(source = 'chat-question') {
+        const input = byId(source); let request = input.value.trim(); if (!request) return;
+        const shownRequest = request; if (awaitingCrashApplication) request = `${request} keeps crashing`;
+        openChat(); addMessage('user', shownRequest); input.value = '';
+        const pending = document.createElement('article'); pending.className = 'moon-message pending'; pending.innerHTML = '<div class="message-orb">☾</div><div><p>Moon is investigating with Dera1.4…</p></div>'; byId('chat-thread').append(pending);
+        try {
+          if (pairedWebShell) {
+            const payload = await pairedQuestion(request); pending.remove();
+            awaitingCrashApplication = Boolean(payload.result?.needs_application_name);
+            const reply = summarizeReply(payload); addMessage('moon', reply.text, reply.findings, reply.details, reply.next); return;
+          }
+          const url = activeTaskId ? `/tasks/${activeTaskId}/follow-up` : '/ask';
+          const response = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({request}) }); const payload = await response.json(); pending.remove();
+          if (!response.ok) throw new Error(payload.detail || 'Moon could not complete that request.');
+          awaitingCrashApplication = Boolean(payload.result?.needs_application_name); activeTaskId = payload.task_id || payload.result?.task?.id || activeTaskId;
+          const reply = summarizeReply(payload); addMessage('moon', reply.text, reply.findings, reply.details, reply.next); if (payload.result?.proposals) addProposalCards(payload.result.proposals);
+        } catch (error) { pending.remove(); addMessage('moon', error.message || 'Moon could not reach the local runtime.'); }
+      }
+      byId('ask-button').addEventListener('click', () => sendQuestion('moon-question')); byId('moon-question').addEventListener('keydown', (event) => { if (event.key === 'Enter') sendQuestion('moon-question'); });
+      byId('chat-form').addEventListener('submit', (event) => { event.preventDefault(); sendQuestion(); });
+      byId('minimize-chat').addEventListener('click', (event) => { event.stopPropagation(); byId('chat-modal').classList.add('minimized'); });
+      byId('chat-modal').addEventListener('click', () => { if (byId('chat-modal').classList.contains('minimized')) { byId('chat-modal').classList.remove('minimized'); byId('chat-question').focus(); } });
+      function endConversation() { const chat = byId('chat-modal'); chat.close(); chat.classList.remove('minimized'); byId('chat-thread').replaceChildren(); activeTaskId = null; awaitingCrashApplication = false; }
+      byId('close-chat').addEventListener('click', endConversation);
+      byId('chat-modal').addEventListener('cancel', (event) => { event.preventDefault(); endConversation(); });
+      async function proposalRequest(path, body) { const response = await fetch(`/proposals/${selectedProposal.id}/${path}`, { method:'POST', headers:{'Content-Type':'application/json'}, body: body ? JSON.stringify(body) : undefined }); const payload = await response.json(); if (!response.ok) throw new Error(payload.detail || 'Moon could not complete this proposal step.'); return payload; }
+      function selectedAction() { return byId('proposal-action').value; }
+      function proposalPath(step) { return selectedAction() === 'copy' ? `copy/${step}` : step; }
+      byId('proposal-action').addEventListener('change', () => { setText('proposal-state', 'Proposed'); setText('proposal-result', selectedAction() === 'copy' ? 'Copy keeps the original in place. Run a dry preview before approving it.' : 'Move changes the item location only after preview, approval, and execution.'); byId('proposal-approve').disabled = true; byId('proposal-execute').disabled = true; });
+      byId('proposal-preview').addEventListener('click', async () => { const destination = byId('proposal-destination').value.trim(); const action = selectedAction(); if (!destination) { setText('proposal-result', `Enter an existing destination folder before previewing this ${action}.`); return; } try { const preview = await proposalRequest(proposalPath('preview'), {destination}); setText('proposal-state', 'Previewed'); setText('proposal-result', `Validated dry run: ${preview.source} would ${action} to ${preview.destination}. No files were ${action === 'copy' ? 'copied' : 'moved'}.`); byId('proposal-approve').disabled = false; } catch (error) { setText('proposal-result', error.message); } });
+      byId('proposal-approve').addEventListener('click', async () => { const destination = byId('proposal-destination').value.trim(); const action = selectedAction(); try { const approved = await proposalRequest(proposalPath('approve'), {destination, confirmed:true}); setText('proposal-state', 'Approved'); setText('proposal-result', `${approved.message} Review the destination once more, then use Execute and verify if you want to carry out this ${action}.`); byId('proposal-execute').disabled = false; } catch (error) { setText('proposal-result', error.message); } });
+      byId('proposal-execute').addEventListener('click', async () => { const action = selectedAction(); try { const executed = await proposalRequest(proposalPath('execute')); setText('proposal-state', 'Executed and verified'); setText('proposal-result', action === 'copy' ? `Moon verified the copy at ${executed.result.destination}. The original remains at the source.` : `Moon verified the move to ${executed.result.destination}. Reported free-space change: ${executed.result.free_space_change_gb} GB.`); byId('proposal-execute').disabled = true; } catch (error) { setText('proposal-result', error.message); } });
+      byId('proposal-close').addEventListener('click', () => byId('proposal-modal').close());
+      function readableTime(value) { const date = new Date(value); return Number.isNaN(date.valueOf()) ? 'Saved locally' : date.toLocaleString([], {dateStyle:'medium', timeStyle:'short'}); }
+      async function reopenTask(id) { try { const response = await fetch(`/tasks/${id}`); const task = await response.json(); if (!response.ok) throw new Error(task.detail || 'Task could not be opened.'); activeTaskId = task.id; openChat(); byId('chat-thread').replaceChildren(); addMessage('moon', `I reopened this saved investigation: ${task.objective}. ${task.result?.summary || 'The recorded evidence is available below.'}`, task.findings || [], detailsFor(task.findings || []), `${task.result?.recommended_next_step || 'Ask a follow-up to continue this task.'} Moon needs your explicit permission before it can carry out any change.`); (task.activity || []).forEach((event) => addMessage('moon', `Follow-up recorded: ${event.payload?.request || event.kind}.`)); } catch (error) { addMessage('moon', error.message || 'Moon could not open that task.'); } }
+      async function loadActivity() { const list = byId('task-list'); try { const [taskResponse,eventResponse] = await Promise.all([fetch('/tasks'),fetch('/monitor/events')]); const data = await taskResponse.json(); const monitor = await eventResponse.json(); if (!taskResponse.ok) throw new Error(); list.replaceChildren(); const tasks=data.tasks || [], events=monitor.events || []; if (!tasks.length && !events.length) { list.innerHTML = '<p class="empty-tasks">No saved investigations or monitoring findings yet.</p>'; return; } events.forEach((event) => { const row=document.createElement('article'); row.className='task-row monitor-event'; const state=document.createElement('span'); state.className='task-state monitoring'; const detail=document.createElement('div'); const title=document.createElement('b'); title.textContent='Monitoring finding'; const meta=document.createElement('small'); meta.textContent=`${event.findings.map((finding)=>finding.message).join(' ')} · ${readableTime(event.created_at)}`; detail.append(title,meta); row.append(state,detail); list.append(row); }); tasks.forEach((task) => { const row = document.createElement('article'); row.className = 'task-row'; const state = document.createElement('span'); state.className = `task-state ${task.state || ''}`; const detail = document.createElement('div'); const title = document.createElement('b'); title.textContent = task.objective; const meta = document.createElement('small'); meta.textContent = `${task.state || 'saved'} · ${readableTime(task.created_at)}`; detail.append(title, meta); const open = document.createElement('button'); open.type = 'button'; open.textContent = 'Open task'; open.addEventListener('click', () => reopenTask(task.id)); row.append(state, detail, open); list.append(row); }); } catch (_) { list.innerHTML = '<p class="empty-tasks">Moon could not load local activity. Check that the local runtime is running.</p>'; } }
+      const overviewNav = document.querySelector('.navigation a[href="#overview"]'); const activityNav = document.querySelector('.navigation a[href="#activity"]'); const systemNav = document.querySelector('.navigation a[href="#system"]'); const settingsNav = document.querySelector('.navigation a[href="#settings"]');
+      function setNav(selected) { [overviewNav, activityNav, systemNav, settingsNav].forEach((item) => item.classList.toggle('selected', item === selected)); }
+      function showOverview() { document.querySelector('.shell').classList.remove('show-activity', 'show-system', 'show-settings', 'show-public'); document.querySelectorAll('.public-page').forEach((page) => page.classList.remove('active')); setNav(overviewNav); }
+      function showPublic(id) { document.querySelector('.shell').classList.remove('show-activity', 'show-system', 'show-settings'); document.querySelector('.shell').classList.add('show-public'); document.querySelectorAll('.public-page').forEach((page) => page.classList.toggle('active', page.id === id)); [overviewNav, activityNav, systemNav, settingsNav].forEach((item) => item.classList.remove('selected')); }
+      function showActivity() { document.querySelector('.shell').classList.remove('show-system', 'show-settings', 'show-public'); document.querySelector('.shell').classList.add('show-activity'); setNav(activityNav); loadActivity(); }
+      function insertRows(id, rows) { const target = byId(id); target.replaceChildren(); if (!rows.length) { target.innerHTML = '<p>No current evidence was returned.</p>'; return; } rows.slice(0, 6).forEach((row) => { const item=document.createElement('div'); item.className='process-row'; const content=document.createElement('div'); const title=document.createElement('b'); title.textContent=row.title; const detail=document.createElement('small'); detail.textContent=row.detail; content.append(title,detail); const value=document.createElement('span'); value.textContent=row.value || ''; item.append(content,value); target.append(item); }); }
+      async function loadSystem() { try { const [statusResponse, downloadsResponse, startupResponse] = await Promise.all([fetch('/status'), fetch('/downloads/inspection'), fetch('/system/startup')]); const status = await statusResponse.json(); const downloads = await downloadsResponse.json(); const startup = await startupResponse.json(); if (!statusResponse.ok) throw new Error(); const cpu=status.cpu||{}, memory=status.memory||{}, storage=status.storage||{}, network=status.network||{}; byId('system-summary').innerHTML=`<article><small>CPU</small><strong>${pct(cpu.usage_percent)}</strong></article><article><small>Memory</small><strong>${pct(memory.usage_percent)}</strong></article><article><small>Storage</small><strong>${pct(storage.usage_percent)}</strong></article><article><small>Available space</small><strong>${Number.isFinite(storage.free_gb)?storage.free_gb.toFixed(1)+' GB':'—'}</strong></article>`; setText('system-updated', 'Live snapshot updated just now.'); insertRows('process-list',(status.top_processes||[]).map((p)=>({title:p.name||'Unknown process',detail:`PID ${p.pid || '—'} · ${p.state || 'state unavailable'}`,value:Number.isFinite(p.memory_mb)?p.memory_mb.toFixed(0)+' MB':''}))); const folders=downloads.largest_subfolders||downloads.directories||[]; insertRows('folder-list',folders.map((f)=>({title:f.name||f.path||'Folder',detail:f.path||'User-accessible folder',value:Number.isFinite(f.size_gb)?f.size_gb.toFixed(2)+' GB':''}))); const startupEntries=startup.data?.startup_entries||startup.data?.entries||startup.data?.items||[]; insertRows('startup-list',startupEntries.map((entry)=>({title:entry.name||entry.entry||'Startup entry',detail:entry.location||entry.command||'Startup entry',value:''}))); const uptime = Number(status.uptime_seconds); const hours=Number.isFinite(uptime)?Math.floor(uptime/3600):null; byId('connection-list').innerHTML=`<p class="system-detail">Network: ${network.is_connected ? 'Connected' : 'Offline'}.</p><p class="system-detail">Uptime: ${hours === null ? 'unavailable' : `${hours} hour${hours === 1 ? '' : 's'}`}.</p><p class="system-detail">Moon only reports the current snapshot here. Use Investigate for a task with saved evidence.</p>`; } catch (_) { setText('system-updated','Moon could not load this local snapshot. Check that the local runtime is running.'); } }
+      function showSystem() { document.querySelector('.shell').classList.remove('show-activity', 'show-settings', 'show-public'); document.querySelector('.shell').classList.add('show-system'); setNav(systemNav); loadSystem(); }
+      async function loadSettings() { const grid=byId('settings-grid'); try { const response=await fetch('/settings/local'); const data=await response.json(); if (!response.ok) throw new Error(); const ollama=data.ollama||{}, pairing=data.pairing||{}, runtime=data.runtime||{}, monitoring=data.monitoring||{}, permissions=data.permissions||{}; const modelState=ollama.reachable && ollama.installed ? 'Ready' : ollama.reachable ? 'Model not installed' : 'Ollama offline'; const modelClass=ollama.reachable && ollama.installed ? 'ok' : 'warn'; grid.innerHTML=`<article class="setting-card"><p class="kicker">LOCAL RUNTIME</p><h2>Dera1.4</h2><p>Moon is served only from this computer. The runtime is not publicly exposed.</p><span class="setting-value ok">● ${runtime.scope || 'Local computer only'}</span><p><code>${runtime.address || '127.0.0.1'}</code></p></article><article class="setting-card"><p class="kicker">LOCAL MODEL</p><h2>${ollama.model || 'Ollama model'}</h2><p>Used for grounded language and intent interpretation after Dera1.4 has chosen safe evidence.</p><span class="setting-value ${modelClass}">● ${modelState}</span><p><code>${ollama.base_url || 'Local endpoint'}</code></p></article><article class="setting-card"><p class="kicker">MONITORING</p><h2>${monitoring.mode || 'Local checks'}</h2><p>${monitoring.description || 'Monitoring configuration is unavailable.'}</p><span class="setting-value">Manual control</span></article><article class="setting-card"><p class="kicker">PAIRING</p><h2>Future web connection</h2><p>Pairing is local-only until Moon has secure outbound transport for a Vercel client.</p><span class="setting-value">${pairing.paired_clients?.length || 0} paired local client${(pairing.paired_clients?.length || 0) === 1 ? '' : 's'}</span></article><article class="setting-card wide"><p class="kicker">PERMISSION MODEL</p><h2>Moon will ask first</h2><p>${permissions.description || 'Permission information is unavailable.'}</p><div class="settings-list"><div><b>Observe and investigate</b><span>Read-only</span></div><div><b>Propose a change</b><span>Review required</span></div><div><b>Approve and execute</b><span>Separate explicit user actions</span></div></div></article>`; } catch (_) { grid.innerHTML='<p class="empty-tasks">Moon could not load local settings. Check that the local runtime is running.</p>'; } }
+      async function loadMonitorHistory() { try { const [historyResponse, settingsResponse, eventsResponse]=await Promise.all([fetch('/monitor/history'),fetch('/monitor/settings'),fetch('/monitor/events')]); const history=await historyResponse.json(); const settings=await settingsResponse.json(); const events=await eventsResponse.json(); const latest=history.snapshots?.[0]; byId('monitor-enabled').checked=Boolean(settings.enabled); byId('monitor-interval').value=String(settings.interval_minutes); const mode=settings.enabled ? `Enabled while Moon is running, every ${settings.interval_minutes} minutes.` : 'Disabled. Moon checks only when you ask it to.'; setText('monitor-description', `${mode}${latest ? ` Last check: ${readableTime(latest.observed_at)}.` : ''}`); const latestEvent=events.events?.[0]; if (latestEvent) setText('monitor-results', latestEvent.findings.map((finding)=>finding.message).join(' ')); } catch (_) { /* The monitoring control remains usable without history. */ } }
+      async function runMonitorCheck() { const button=byId('monitor-check'); button.disabled=true; button.textContent='Checking…'; try { const response=await fetch('/monitor/check'); const data=await response.json(); if (!response.ok) throw new Error(); const findings=data.findings||[]; const message=findings.length ? findings.map((finding)=>finding.message).join(' ') : data.message; setText('monitor-results', message); byId('monitor-badge').textContent=findings.length ? `${findings.length} monitoring finding${findings.length === 1 ? '' : 's'}` : 'Monitoring checked'; byId('monitor-badge').classList.toggle('attention', findings.length > 0); loadMonitorHistory(); } catch (_) { setText('monitor-results','Moon could not complete the local monitoring check. Check that the runtime is running.'); } finally { button.disabled=false; button.textContent='Check now'; } }
+      async function saveMonitorSettings() { const button=byId('monitor-save'); button.disabled=true; try { const response=await fetch('/monitor/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled:byId('monitor-enabled').checked,interval_minutes:Number(byId('monitor-interval').value)})}); const data=await response.json(); if(!response.ok) throw new Error(data.detail); setText('monitor-results', data.enabled ? `Monitoring is enabled locally every ${data.interval_minutes} minutes while Moon is running. No actions will be taken automatically.` : 'Background monitoring is disabled. Existing history remains local.'); loadMonitorHistory(); } catch(error) { setText('monitor-results', error.message || 'Moon could not save monitoring settings.'); } finally { button.disabled=false; } }
+      async function loadPairingStatus() { try { const response=await fetch('/pairing/status'); const data=await response.json(); if(!response.ok) throw new Error(); const clients=data.paired_clients||[]; setText('pairing-result', clients.length ? `Paired locally: ${clients.map((client)=>client.name).join(', ')}. Remote access is ${data.remote_access || 'not configured'}.` : `No paired clients. Remote access is ${data.remote_access || 'not configured'}.`); } catch (_) { setText('pairing-result','Moon could not load local pairing status.'); } }
+      async function createPairingCode() { const button=byId('pairing-create'); button.disabled=true; try { const response=await fetch('/pairing/code',{method:'POST'}); const data=await response.json(); if(!response.ok) throw new Error(data.detail); setText('pairing-code',data.code); setText('pairing-result',`This code expires at ${readableTime(data.expires_at)} and can be used once.`); } catch(error) { setText('pairing-result',error.message || 'Moon could not create a pairing code.'); } finally { button.disabled=false; } }
+      async function completePairing() { const name=byId('pairing-client').value.trim(), code=byId('pairing-input').value.trim(); if(!name || !code) { setText('pairing-result','Enter both a client name and the one-time pairing code.'); return; } try { const response=await fetch('/pairing/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({client_name:name,code})}); const data=await response.json(); if(!response.ok) throw new Error(data.detail); setText('pairing-code','Code used'); setText('pairing-result',`${data.client_name} is paired locally. The device token is retained by the connecting client and is not shown here.`); byId('pairing-input').value=''; loadPairingStatus(); } catch(error) { setText('pairing-result',error.message || 'Moon could not complete pairing.'); } }
+      async function loadBrowserSessions() { const target=byId('relay-sessions'); try { const response=await fetch('/pairing/browsers'); const data=await response.json(); if(!response.ok) throw new Error(data.detail); const clients=data.clients||[]; target.replaceChildren(); if(!clients.length) { target.textContent=data.message || 'No web browsers are paired.'; return; } clients.forEach((client)=>{ const row=document.createElement('div'); const label=document.createElement('span'); label.textContent=`${client.name || 'Paired browser'} · ${readableTime(client.paired_at)}`; const revoke=document.createElement('button'); revoke.type='button'; revoke.textContent='Revoke'; revoke.addEventListener('click',async()=>{ revoke.disabled=true; try { const result=await fetch(`/pairing/browsers/${encodeURIComponent(client.id)}`,{method:'DELETE'}); const payload=await result.json(); if(!result.ok) throw new Error(payload.detail); setText('relay-result','Browser access revoked. That browser can no longer retrieve Moon evidence.'); loadBrowserSessions(); } catch(error) { setText('relay-result',error.message || 'Moon could not revoke this browser.'); revoke.disabled=false; } }); row.append(label,revoke); target.append(row); }); } catch (_) { target.textContent='Paired browser sessions are available after the outbound relay is connected.'; } }
+      async function loadRelaySettings() { try { const data=await moonClient.get('/relay/settings'); byId('relay-enabled').checked=Boolean(data.enabled); byId('relay-url').value=data.relay_url || ''; setText('relay-description',data.enabled ? 'Enabled as an outbound-only relay. Moon does not listen for incoming remote connections.' : 'Disabled. Moon never opens an inbound port or exposes this computer publicly.'); setText('relay-result',data.relay_url ? `Configured relay: ${data.relay_url}` : 'A relay service has not been configured.'); loadBrowserSessions(); } catch (_) { setText('relay-result','Moon could not load relay settings.'); } }
+      async function saveRelaySettings() { try { const data=await moonClient.post('/relay/settings',{enabled:byId('relay-enabled').checked,relay_url:byId('relay-url').value.trim() || null}); setText('relay-result',data.enabled ? `Outbound relay enabled for ${data.relay_url}. It will only connect outward while a relay service exists.` : 'Outbound relay disabled.'); loadRelaySettings(); } catch(error) { setText('relay-result',error.message || 'Moon could not save relay settings.'); } }
+      function showSettings() { document.querySelector('.shell').classList.remove('show-activity', 'show-system', 'show-public'); document.querySelector('.shell').classList.add('show-settings'); setNav(settingsNav); loadSettings(); loadMonitorHistory(); loadPairingStatus(); loadRelaySettings(); }
+      activityNav.addEventListener('click', (event) => { event.preventDefault(); showActivity(); });
+      overviewNav.addEventListener('click', (event) => { event.preventDefault(); showOverview(); });
+      systemNav.addEventListener('click', (event) => { event.preventDefault(); showSystem(); });
+      settingsNav.addEventListener('click', (event) => { event.preventDefault(); showSettings(); });
+      byId('back-overview').addEventListener('click', showOverview);
+      byId('system-back').addEventListener('click', showOverview);
+      byId('settings-back').addEventListener('click', showOverview);
+      document.querySelectorAll('a[href="#docs"]').forEach((link) => link.addEventListener('click', (event) => { event.preventDefault(); showPublic('docs-page'); }));
+      document.querySelectorAll('a[href="#permissions"]').forEach((link) => link.addEventListener('click', (event) => { event.preventDefault(); showPublic('permissions-page'); }));
+      document.querySelectorAll('.public-back').forEach((button) => button.addEventListener('click', showOverview));
+      byId('monitor-check').addEventListener('click', runMonitorCheck);
+      byId('monitor-save').addEventListener('click', saveMonitorSettings);
+      byId('pairing-create').addEventListener('click', createPairingCode);
+      byId('pairing-complete').addEventListener('click', completePairing);
+      byId('relay-save').addEventListener('click', saveRelaySettings);
+      document.querySelectorAll('[data-chat-question]').forEach((button) => button.addEventListener('click', () => { byId('moon-question').value = button.dataset.chatQuestion; sendQuestion('moon-question'); }));
+      const details = {
+        cpu: (s) => { const d=s.cpu||{}; return {title:'Processor',value:pct(d.usage_percent),lead:'This is the current processor activity observed by Dera1.4.',evidence:`CPU usage is ${pct(d.usage_percent)} across ${d.logical_cores || 'an unknown number of'} logical cores in the latest snapshot.`,next:Number(d.usage_percent)>=85?'Observe this again while the computer feels slow, then inspect the processes using CPU.':'No action is indicated by this CPU reading. Observe it again while the slowdown is happening if the issue continues.'}; },
+        memory: (s) => { const d=s.memory||{}; return {title:'Memory',value:pct(d.usage_percent),lead:'This is the portion of installed memory currently in use.',evidence:`Memory usage is ${pct(d.usage_percent)} with ${Number.isFinite(d.available_gb)?d.available_gb.toFixed(1)+' GB available':'availability not reported'} in the latest snapshot.`,next:Number(d.usage_percent)>=85?'Review the largest memory-consuming applications before deciding whether to close anything.':'No action is indicated by this memory reading. Moon can check the largest memory consumers if you want more detail.'}; },
+        storage: (s) => { const d=s.storage||{}; return {title:'Storage',value:pct(d.usage_percent),lead:'This is the used capacity of the system drive.',evidence:`The system drive is ${pct(d.usage_percent)} used with ${Number.isFinite(d.free_gb)?d.free_gb.toFixed(1)+' GB free':'free space not reported'} in the latest snapshot.`,next:Number(d.usage_percent)>=90?'Inspect large user-accessible folders. Moon can show evidence and propose a move, but will not remove or move anything without permission.':'No action is indicated by this storage reading. Moon can inspect large folders if you want to manage space.'}; }
+      };
+      function openMetric(metric) { const info = details[metric](latestStatus || {}); setText('modal-title',info.title); setText('modal-stat',info.value); setText('modal-lead',info.lead); setText('modal-evidence',info.evidence); setText('modal-recommendation',info.next); byId('metric-modal').showModal(); }
+      document.querySelectorAll('[data-metric]').forEach((card) => card.addEventListener('click', () => openMetric(card.dataset.metric)));
+      byId('modal-close').addEventListener('click', () => byId('metric-modal').close());
+      refreshStatus(); setInterval(refreshStatus, 15000);
+    </script>
+  </body>
+</html>
