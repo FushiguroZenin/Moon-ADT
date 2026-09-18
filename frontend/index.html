@@ -190,18 +190,31 @@
         }
         throw new Error('Moon is waiting for the paired PC to check in. Keep Dera1.4 running and try again.');
       }
+      async function pairedLatestSnapshot() {
+        const relay = webConfig.relayBaseUrl?.replace(/\/$/, '');
+        const session = pairedBrowserSession || sessionStorage.getItem('moon_browser_session');
+        if (!relay || !session) throw new Error('Pair this browser with Moon on your PC before requesting live evidence.');
+        const response = await window.moonClient.nativeFetch(`${relay}/v1/browser/status`, {headers:{Authorization:`Bearer ${session}`}});
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.detail || 'Moon could not retrieve the latest system snapshot.');
+        if (!result.snapshot) throw new Error('The paired PC has not published a system snapshot yet.');
+        return result.snapshot;
+      }
+
+      function isSnapshotQuestion(request) {
+        const text = request.toLowerCase();
+        const asksForInvestigation = /(why|slow|sluggish|lag|crash|startup|boot|download|large file|folder|process|application)/.test(text);
+        return !asksForInvestigation && /(status|system|computer|cpu|processor|memory|ram|storage|disk|space|network|battery|uptime|how.*pc|how.*computer)/.test(text);
+      }
+
       async function refreshStatus() {
         if (pairedWebShell) {
           const session = pairedBrowserSession || sessionStorage.getItem('moon_browser_session');
           if (session && webConfig.relayBaseUrl && !remoteStatusLoading) {
             remoteStatusLoading = true; setText('runtime-status', 'Requesting evidence');
             try {
-              const relay = webConfig.relayBaseUrl.replace(/\/$/, '');
-              const response = await window.moonClient.nativeFetch(`${relay}/v1/browser/status`, {headers:{Authorization:`Bearer ${session}`}});
-              const result = await response.json();
-              if (!response.ok) throw new Error(result.detail || 'Moon could not retrieve the latest system snapshot.');
-              if (!result.snapshot) throw new Error('The paired PC has not published a system snapshot yet.');
-              renderSnapshot(result.snapshot); setText('runtime-status', 'Paired and connected'); document.documentElement.classList.add('paired-device-connected');
+              const snapshot = await pairedLatestSnapshot();
+              renderSnapshot(snapshot); setText('runtime-status', 'Paired and connected'); document.documentElement.classList.add('paired-device-connected');
               return;
             } catch (error) {
               const message = error?.message || 'Moon could not retrieve live evidence from the paired PC.';
@@ -260,7 +273,7 @@
         if (result.explanation) { const explanation = result.explanation; const evidence = explanation.evidence || findings; return { text: explanation.interpretation || 'Moon prepared an evidence-backed explanation.', findings: evidence, details: detailsFor(evidence), next: `${explanation.next_step || 'Ask Moon for more detail about any finding.'} Moon needs your explicit permission before it can carry out any change.` }; }
         if (result.data && result.findings) { return { text: 'Moon inspected startup applications using a read-only local check.', findings: result.findings, details: detailsFor(result.findings), next: 'Review startup entries before changing anything. Moon can prepare a review-only proposal, but it needs your explicit permission before it can carry out any change.' }; }
         if (task.result?.summary) return { text: task.result.summary, findings, details: detailsFor(findings), next: `${task.result.recommended_next_step || 'No change is recommended from this snapshot.'} Moon needs your explicit permission before it can carry out any change.` };
-        if (result.snapshot) { const s=result.snapshot, cpu=s.cpu||{}, memory=s.memory||{}, storage=s.storage||{}; return { text:'I captured a current local system snapshot.', findings:[], details:`CPU use is ${number(cpu.usage_percent)}%. Memory use is ${number(memory.usage_percent)}% with ${number(memory.available_gb)} GB available. System storage is ${number(storage.usage_percent)}% used with ${number(storage.free_gb)} GB free.`, next:'Ask Moon to investigate a specific concern, such as slowness or Downloads. Moon will gather more evidence before suggesting any action.' }; }
+        if (result.snapshot) { const s=result.snapshot, cpu=s.cpu||{}, memory=s.memory||{}, storage=s.storage||{}; const origin=result.remote_snapshot ? 'your paired PC' : 'this computer'; return { text:`I read the latest system snapshot from ${origin}.`, findings:[], details:`CPU use is ${number(cpu.usage_percent)}%. Memory use is ${number(memory.usage_percent)}% with ${number(memory.available_gb)} GB available. System storage is ${number(storage.usage_percent)}% used with ${number(storage.free_gb)} GB free.`, next:'Ask Moon to investigate a specific concern, such as slowness or Downloads. Moon will gather more evidence before suggesting any action.' }; }
         if (result.inspection) return { text: 'I inspected Downloads. The evidence is ready for review; I have not moved or removed anything.', findings: [], details:'Moon inspected user-accessible folder sizes only. It did not open, delete, move, or change any files.', next:'Review the discovered folders. If you want to free space, Moon can prepare a move proposal for your review and permission.' };
         if (result.proposals) return { text: `I prepared ${result.proposals.length} move proposal${result.proposals.length === 1 ? '' : 's'} for review. They are not approved and cannot execute from this screen.`, findings: [], details:'Each proposal is a suggested move only. Moon has not changed any files.', next:'Choose whether you want to review a proposal. Moon needs your explicit approval and a destination before a move can be considered.' };
         return { text: result.message || 'I completed the allowed read-only check.', findings: [], details:'Moon did not perform an action outside its current safe task allow-list.', next:'Ask for a supported read-only investigation, or ask Moon to explain what it can do.' };
@@ -271,6 +284,10 @@
         proposals.slice(0, 3).forEach((proposal) => { const card = document.createElement('article'); card.className = 'proposal-card'; const title = document.createElement('b'); title.textContent = proposal.path ? `Move ${proposal.path.split('\\').pop()}` : 'Move proposal'; const detail = document.createElement('small'); const size = Number(proposal.reclaimable_gb); detail.textContent = `Estimated effect: ${Number.isFinite(size) ? size.toFixed(2) + ' GB' : 'size unavailable'}. No files have been moved.`; const button = document.createElement('button'); button.type = 'button'; button.textContent = 'Review permission'; button.addEventListener('click', () => openProposal(proposal)); card.append(title, detail, button); container.append(card); }); byId('chat-thread').append(container); }
       function openChat() { const chat = byId('chat-modal'); chat.classList.remove('minimized'); if (!chat.open) chat.showModal(); byId('chat-question').focus(); }
       async function pairedQuestion(request) {
+        if (isSnapshotQuestion(request)) {
+          const snapshot = latestStatus || await pairedLatestSnapshot();
+          return {result:{snapshot, remote_snapshot:true}};
+        }
         const relay = webConfig.relayBaseUrl?.replace(/\/$/, ''); const session = pairedBrowserSession || sessionStorage.getItem('moon_browser_session');
         if (!relay || !session) throw new Error('Pair this browser with Moon on your PC before starting a conversation.');
         const headers = {'Content-Type':'application/json','Authorization':`Bearer ${session}`};

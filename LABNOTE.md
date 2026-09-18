@@ -26,8 +26,7 @@ perform arbitrary commands. Python is the source of factual system state.
 Understand → Observe → Reason → Propose → Permission → Execute → Observe → Verify
 ```
 
-The current implementation is terminal-first. A polished interface and computer UI
-control are future phases, not present features.
+Moon began terminal-first. It now also has a local dashboard and paired web companion; direct visual computer control remains a future phase.
 
 ## What has been built
 
@@ -635,3 +634,150 @@ dialog makes the network boundary explicit: no inbound PC connection, no relay
 device token in the web page, and no pairing code shown until the relay confirms
 it can receive it. Local Settings now lists paired web browsers and lets the PC
 owner revoke each browser session.
+
+## Moon interface, local runtime, and paired web companion
+
+The original terminal-first foundation now has a local FastAPI runtime and a Moon
+web interface. The local runtime is served only on `127.0.0.1:8765`; it exposes
+Moon's dashboard, setup flow, safe read-only investigations, monitoring controls,
+local model setup, proposal review, and local pairing controls.
+
+### Dashboard and interface
+
+The Moon interface now includes:
+
+- A visual dashboard with live CPU, memory, and storage cards.
+- A responsive desktop-first layout and a mobile companion view.
+- A local-time greeting that does not assume the user's name.
+- Detail dialogs for the metric cards. They explain the selected measurement in
+  plain language and distinguish observation from a diagnosis.
+- A focused, minimizable Moon conversation dialog that preserves the current
+  browser conversation until it is closed or refreshed.
+- Evidence cards in chat. Selecting one expands the evidence into readable
+  language rather than raw JSON.
+- Documentation, release-note, and permission views, with browser back/forward
+  navigation and working return links.
+- A footer linking to public documentation, permissions, and the project's
+  GitHub profile.
+
+The interface remains evidence-led: dashboard values come from Python snapshots;
+Moon's language model does not manufacture them.
+
+### Local runtime and installer
+
+MoonRuntime packages the local FastAPI runtime as a Windows executable and opens the
+Moon setup/dashboard page in the browser. The installer is built with PyInstaller
+and Inno Setup:
+
+```powershell
+.\installer\build-installer.ps1
+```
+
+The output installer is:
+
+```text
+installer-output\Moon-Setup.exe
+```
+
+The installed runtime is located at:
+
+```text
+%LOCALAPPDATA%\Moon\MoonRuntime.exe
+```
+
+It has a tray presence so the user can leave Moon running or explicitly quit it.
+Reinstalling while `MoonRuntime.exe` is active can fail because Windows prevents the
+installer from replacing an open executable; quit it from the tray or Task Manager,
+then run the installer again.
+
+The setup page supports diagnostics-only use and optional local AI. It explains that
+Ollama and the recommended `llama3.1:8b` model remain local, require several GB of
+disk space, and use substantial RAM while active. Diagnostics continue to work
+without the model.
+
+### Public web deployment
+
+The public Moon web shell is deployed independently from the local runtime:
+
+- Vercel serves the `frontend/` directory at `https://moon-adt.vercel.app`.
+- The deployed web page has no direct access to a PC, local paths, device token, or
+  local API address.
+- A separate HTTPS relay runs at `https://moon-relay.onrender.com/`.
+
+Vercel must use `frontend` as its Root Directory because the repository also contains
+the Python runtime. The public browser never attempts to call `127.0.0.1` on a
+remote visitor's device.
+
+### Pairing and outbound relay
+
+Moon's paired-web design is outbound-only:
+
+```text
+MoonRuntime on PC → HTTPS relay ← authenticated paired browser
+```
+
+A user enters the relay address only in the local setup page, generates a short-lived
+one-time pairing code, and enters that code in a browser. The raw code is not stored
+by the relay. The relay receives code hashes, exchanges a valid code for a browser
+session, and accepts only allow-listed read-only requests from that session.
+
+The relay has no computer-action authority. It can accept only these read-only
+categories: current system status, slow-computer investigation, Downloads inspection,
+startup diagnostics, and application-crash investigation. File changes remain local
+and continue to require Moon's proposal, preview, approval, and execution flow.
+
+The Render deployment requires these environment values:
+
+```text
+MOON_WEB_ORIGIN=https://moon-adt.vercel.app
+MOON_RELAY_SESSION_SECRET=<private generated Render value>
+```
+
+`MOON_RELAY_SESSION_SECRET` signs browser sessions. This avoids a Render restart
+invalidating an otherwise paired browser solely because the service's temporary local
+filesystem was reset. The secret belongs only in Render's environment settings; it is
+not committed to GitHub or placed in the frontend.
+
+### Reliable live snapshots
+
+The first relay version queued a browser request and waited for the PC runtime to
+poll and return a result. This proved unreliable on the free hosted relay: a browser
+could pair successfully but time out waiting for the PC's command response.
+
+Moon now uses a snapshot feed for live dashboard evidence:
+
+```text
+Dera1.4 takes a current read-only snapshot every 5 seconds
+  → publishes it outward over HTTPS to the relay
+  → relay stores the latest snapshot for the paired device
+  → paired browser reads that latest snapshot immediately
+```
+
+The snapshot includes existing safe system evidence such as CPU use, memory use and
+availability, storage use and free space, network state, uptime, and process summary.
+It is authenticated to the relay and travels over HTTPS. It is not an inbound
+connection to the PC and does not grant file or action permissions to the browser.
+
+Remote Moon conversation now uses that latest snapshot immediately for status-type
+questions, including questions about CPU, memory, storage, network, uptime, or the
+overall computer status. Its answer clearly identifies the data as a snapshot from
+the paired PC. Requests that need a deeper investigation still use the existing
+read-only command path and should not be represented as instantaneous live data.
+
+The relay worker was also made resilient to transient authentication failures, so one
+failed command poll does not terminate the worker that publishes snapshots.
+
+## Current limits and next engineering milestone
+
+Moon now has a practical local dashboard and a paired mobile companion for live
+read-only system evidence. It is not yet a fully real-time remote agent:
+
+- Remote status questions use the snapshot feed and are reliable once the runtime is
+  running and has published a snapshot.
+- Deeper remote investigations still use a queued request/poll path.
+- A persistent outbound connection for remote investigations and conversational
+  follow-ups is the next transport milestone.
+- Remote access remains opt-in, browser-paired, read-only, and dependent on the
+  local MoonRuntime remaining active.
+- V1 continues to guide users through sensitive or destructive tasks instead of
+  performing deletion, overwrite, registry edits, or unattended actions.
