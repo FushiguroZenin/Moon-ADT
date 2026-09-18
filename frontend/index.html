@@ -151,8 +151,9 @@
           if (!response.ok) throw new Error(result.detail || 'Pairing could not be completed.');
           sessionStorage.setItem('moon_browser_session', result.browser_session);
           sessionStorage.setItem('moon_paired_device', result.device_id);
-          status.textContent = `Paired with ${result.device_id}. This browser can now use the future authenticated Moon companion connection.`;
+          status.textContent = `Paired with ${result.device_id}. This browser can now request read-only evidence from your Moon PC.`;
           byId('web-pairing-form').reset();
+          refreshStatus();
         } catch (error) { status.textContent = error.message || 'Pairing could not be completed.'; }
       }
       byId('web-pairing-form').addEventListener('submit', pairThisBrowser);
