@@ -6,7 +6,9 @@ read-only requests; it never performs a computer action itself.
 
 from __future__ import annotations
 
+import base64
 import hashlib
+import hmac
 import json
 import os
 import secrets
@@ -85,11 +87,53 @@ def require_device(request: Request, device_id: str) -> None:
         raise HTTPException(status_code=401, detail="Device authentication failed.")
 
 
+def _session_secret() -> bytes:
+    """Return the relay-owned key used to validate stateless browser sessions."""
+    secret = os.getenv("MOON_RELAY_SESSION_SECRET", "").strip()
+    if not secret:
+        raise HTTPException(status_code=503, detail="Moon relay session signing is not configured.")
+    return secret.encode()
+
+
+def _urlsafe_encode(value: bytes) -> str:
+    return base64.urlsafe_b64encode(value).decode().rstrip("=")
+
+
+def _urlsafe_decode(value: str) -> bytes:
+    return base64.urlsafe_b64decode(value + "=" * (-len(value) % 4))
+
+
+def issue_browser_session(device_id: str, client_name: str) -> str:
+    """Create a signed session that survives relay-instance restarts."""
+    payload = json.dumps({"device_id": device_id, "client_name": client_name[:80], "issued_at": now()}, separators=(",", ":")).encode()
+    encoded = _urlsafe_encode(payload)
+    signature = hmac.new(_session_secret(), encoded.encode(), hashlib.sha256).digest()
+    return f"{encoded}.{_urlsafe_encode(signature)}"
+
+
+def stateless_browser_session(token: str) -> str | None:
+    """Validate a signed browser session and return its paired device ID."""
+    try:
+        encoded, supplied_signature = token.split(".", 1)
+        expected_signature = hmac.new(_session_secret(), encoded.encode(), hashlib.sha256).digest()
+        if not hmac.compare_digest(expected_signature, _urlsafe_decode(supplied_signature)):
+            return None
+        payload = json.loads(_urlsafe_decode(encoded))
+        device_id = payload.get("device_id")
+        return device_id if isinstance(device_id, str) and device_id.startswith("moon_") else None
+    except (ValueError, UnicodeDecodeError, json.JSONDecodeError):
+        return None
+
+
 def browser_session(request: Request) -> tuple[str, str]:
     header = request.headers.get("Authorization", "")
     if not header.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Browser pairing session is required.")
-    session_hash = token_hash(header[7:])
+    token = header[7:]
+    session_hash = token_hash(token)
+    device_id = stateless_browser_session(token)
+    if device_id:
+        return session_hash, device_id
     with database.connect() as db:
         row = db.execute("SELECT device_id FROM browser_sessions WHERE session_hash = ?", (session_hash,)).fetchone()
     if not row:
@@ -155,7 +199,7 @@ def complete_browser_pairing(body: BrowserPairing) -> dict:
         row = db.execute("SELECT device_id, expires_at FROM browser_pairing_codes WHERE code_hash = ?", (hashed,)).fetchone()
         if not row or datetime.fromisoformat(row[1]) <= datetime.now(timezone.utc):
             raise HTTPException(status_code=400, detail="The pairing code is invalid, expired, or has not reached the relay yet.")
-        session = secrets.token_urlsafe(32)
+        session = issue_browser_session(row[0], body.client_name)
         db.execute("DELETE FROM browser_pairing_codes WHERE code_hash = ?", (hashed,))
         db.execute("INSERT INTO browser_sessions (session_hash, device_id, client_name, created_at) VALUES (?, ?, ?, ?)", (token_hash(session), row[0], body.client_name[:80], now()))
     return {"device_id": row[0], "browser_session": session, "client_name": body.client_name[:80]}
