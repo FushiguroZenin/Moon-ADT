@@ -196,8 +196,11 @@
           if (session && webConfig.relayBaseUrl && !remoteStatusLoading) {
             remoteStatusLoading = true; setText('runtime-status', 'Requesting evidence');
             try {
-              const result = await pairedReadOnly('system_status');
-              if (!result.snapshot) throw new Error('The paired PC returned no system snapshot.');
+              const relay = webConfig.relayBaseUrl.replace(/\/$/, '');
+              const response = await window.moonClient.nativeFetch(`${relay}/v1/browser/status`, {headers:{Authorization:`Bearer ${session}`}});
+              const result = await response.json();
+              if (!response.ok) throw new Error(result.detail || 'Moon could not retrieve the latest system snapshot.');
+              if (!result.snapshot) throw new Error('The paired PC has not published a system snapshot yet.');
               renderSnapshot(result.snapshot); setText('runtime-status', 'Paired and connected'); document.documentElement.classList.add('paired-device-connected');
               return;
             } catch (error) {

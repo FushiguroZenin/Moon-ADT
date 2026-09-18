@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from urllib.error import URLError
+from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from dera.permissions.pairing import PairingService
@@ -15,7 +15,7 @@ class OutboundRelayClient:
     def status(self) -> dict:
         return RelayStore().get()
 
-    def heartbeat(self) -> dict:
+    def heartbeat(self, retry_on_auth_failure: bool = True) -> dict:
         store = RelayStore()
         config = store.get()
         if not config["enabled"] or not config["relay_url"]:
@@ -47,10 +47,37 @@ class OutboundRelayClient:
         try:
             with urlopen(request, timeout=10) as response:
                 response.read()
+        except HTTPError as error:
+            if error.code == 401 and retry_on_auth_failure:
+                store.clear_token()
+                return self.heartbeat(retry_on_auth_failure=False)
+            return {"sent": False, "message": f"The outbound relay rejected this device: HTTP {error.code}."}
         except URLError as error:
             return {"sent": False, "message": f"The outbound relay could not be reached: {error.reason}"}
         self.publish_pairing_codes()
         return {"sent": True, "message": "Signed heartbeat sent through the outbound relay."}
+
+    def publish_snapshot(self, snapshot: dict) -> dict:
+        """Publish only the current read-only system snapshot to the configured relay."""
+        store, config = RelayStore(), RelayStore().get()
+        device_id = PairingService().status()["device_id"]
+        if not config["enabled"] or not config["relay_url"] or not store.token() or not device_id:
+            return {"sent": False, "message": "Outbound relay is not configured or enrolled."}
+        envelope = signed_envelope(device_id, "runtime.snapshot", {"snapshot": snapshot}, store.secret())
+        request = Request(
+            config["relay_url"].rstrip("/") + f"/v1/devices/{device_id}/events",
+            data=json.dumps(envelope).encode(),
+            headers={"Content-Type": "application/json", "Authorization": f"Bearer {store.token()}"},
+            method="POST",
+        )
+        try:
+            with urlopen(request, timeout=10) as response:
+                response.read()
+            return {"sent": True}
+        except HTTPError as error:
+            return {"sent": False, "message": f"The relay rejected the system snapshot: HTTP {error.code}."}
+        except URLError as error:
+            return {"sent": False, "message": f"The relay could not receive the system snapshot: {error.reason}"}
 
     def publish_pairing_codes(self) -> dict:
         """Publish only active code hashes; browser sessions never reach the PC."""
@@ -84,9 +111,12 @@ class OutboundRelayClient:
         try:
             with urlopen(request, timeout=10) as response:
                 return json.loads(response.read())
+        except HTTPError as error:
+            if error.code == 401:
+                store.clear_token()
+            return {"commands": [], "message": f"Relay command poll failed: HTTP {error.code}."}
         except (URLError, json.JSONDecodeError) as error:
             return {"commands": [], "message": f"Relay command poll failed: {error}"}
-
     def send_result(self, command_id: str, result: dict) -> dict:
         store, config = RelayStore(), RelayStore().get()
         device_id = PairingService().status()["device_id"]

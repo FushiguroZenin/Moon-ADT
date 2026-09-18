@@ -54,6 +54,7 @@ class RelayDatabase:
             db.execute("CREATE TABLE IF NOT EXISTS browser_pairing_codes (code_hash TEXT PRIMARY KEY, device_id TEXT NOT NULL, expires_at TEXT NOT NULL)")
             db.execute("CREATE TABLE IF NOT EXISTS browser_sessions (session_hash TEXT PRIMARY KEY, device_id TEXT NOT NULL, client_name TEXT NOT NULL, created_at TEXT NOT NULL)")
             db.execute("CREATE TABLE IF NOT EXISTS command_results (command_id TEXT PRIMARY KEY, completed_at TEXT NOT NULL, result TEXT NOT NULL)")
+            db.execute("CREATE TABLE IF NOT EXISTS latest_snapshots (device_id TEXT PRIMARY KEY, observed_at TEXT NOT NULL, snapshot TEXT NOT NULL)")
             columns = {row[1] for row in db.execute("PRAGMA table_info(commands)")}
             if "browser_session_hash" not in columns:
                 db.execute("ALTER TABLE commands ADD COLUMN browser_session_hash TEXT")
@@ -241,9 +242,17 @@ async def receive_event(device_id: str, request: Request) -> dict:
     payload = await request.json()
     with database.connect() as db:
         db.execute("INSERT INTO device_events (device_id, created_at, payload) VALUES (?, ?, ?)", (device_id, now(), json.dumps(payload)))
+        event_payload = payload.get("payload") or {}
+        if payload.get("message_type") == "runtime.snapshot":
+            snapshot = event_payload.get("snapshot")
+            if isinstance(snapshot, dict):
+                db.execute(
+                    "INSERT OR REPLACE INTO latest_snapshots (device_id, observed_at, snapshot) VALUES (?, ?, ?)",
+                    (device_id, now(), json.dumps(snapshot)),
+                )
         if payload.get("message_type") == "command.result":
-            command_id = str((payload.get("payload") or {}).get("command_id", ""))
-            result = (payload.get("payload") or {}).get("result")
+            command_id = str(event_payload.get("command_id", ""))
+            result = event_payload.get("result")
             owned = db.execute("SELECT id FROM commands WHERE id = ? AND device_id = ?", (command_id, device_id)).fetchone()
             if owned and isinstance(result, dict):
                 db.execute("INSERT OR REPLACE INTO command_results (command_id, completed_at, result) VALUES (?, ?, ?)", (command_id, now(), json.dumps(result)))
@@ -272,6 +281,17 @@ def enqueue_read_only_command(device_id: str, body: QueuedCommand, request: Requ
     with database.connect() as db:
         db.execute("INSERT INTO commands (id, device_id, created_at, command_type, payload) VALUES (?, ?, ?, ?, ?)", (command_id, device_id, now(), body.command_type, json.dumps(body.payload)))
     return {"command_id": command_id, "state": "queued", "execution": "not performed by relay"}
+
+
+@app.get("/v1/browser/status")
+def browser_latest_status(request: Request) -> dict:
+    """Return the most recently published read-only snapshot for this paired browser."""
+    _, device_id = browser_session(request)
+    with database.connect() as db:
+        row = db.execute("SELECT observed_at, snapshot FROM latest_snapshots WHERE device_id = ?", (device_id,)).fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="Moon has not published a system snapshot yet. Keep Dera1.4 running for a few seconds and refresh.")
+    return {"device_id": device_id, "observed_at": row[0], "snapshot": json.loads(row[1])}
 
 
 @app.post("/v1/browser/commands")

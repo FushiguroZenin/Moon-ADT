@@ -84,11 +84,20 @@ def _process_relay_commands() -> list[dict]:
 
 
 def _relay_worker() -> None:
-    """Conservative opt-in outbound polling; no inbound listener is created."""
+    """Publish read-only evidence outward while retaining the future command poll."""
     while not _relay_stop.is_set():
         if RelayStore().get()["enabled"]:
-            _process_relay_commands()
-            wait_seconds = 60
+            try:
+                client = OutboundRelayClient()
+                heartbeat = client.heartbeat()
+                if heartbeat.get("sent"):
+                    client.publish_snapshot(SystemObserver().snapshot())
+                _process_relay_commands()
+            except Exception:
+                # The next scheduled outbound attempt can recover from a transient relay failure.
+                pass
+            # A paired browser reads the latest snapshot directly from the relay.
+            wait_seconds = 5
         else:
             wait_seconds = 60
         _relay_wake.wait(wait_seconds)
