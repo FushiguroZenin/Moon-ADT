@@ -1,142 +1,47 @@
 # Moon
 
-Moon is a personal AI computer agent. Dera1.4 is its controlled local runtime.
+Moon is a personal AI computer agent that observes a Windows PC, explains evidence, and proposes safe next steps. **Dera1.4** is Moon’s local runtime: it owns system access, diagnostics, permission checks, and verification. The optional local model explains evidence; it does not control the computer.
 
-## First milestone
+## Beta capabilities
 
-The current foundation is read-only. It collects a system snapshot and produces
-deterministic performance findings for: "My computer is slow. Find out why."
+- Live CPU, memory, storage, network, uptime, and process evidence
+- Performance, Downloads, startup, hardware, and crash investigations
+- Optional private local AI through Ollama and `llama3.1:8b`
+- Evidence-backed chat and persistent local task history
+- Proposal, preview, approval, and verified local move/copy flow
+- Paired mobile companion with live read-only system snapshots
 
-## Run
+Moon does not silently delete files, edit settings, close applications, or perform unapproved actions.
 
-Select the project virtual environment in PyCharm, install dependencies, then run:
+## Install Moon on Windows
 
-```powershell
-pip install -e .
-python main.py status --json
-python main.py diagnose performance --json
-python main.py investigate slow-computer --json
-python main.py inspect "C:\Users\Indra\Downloads" --json
-python main.py propose cleanup-downloads --json
-```
+1. Download `Moon-Setup.exe` from the GitHub Release.
+2. Run the installer and open Moon.
+3. Use diagnostics immediately, or choose **Enable local AI** to install Ollama and Moon’s recommended model.
+4. To view live PC evidence on another device, open **Set up pairing**, configure the Moon relay, generate a one-time code, and enter it on the Moon web page.
 
-`investigate slow-computer` saves a local task record to `data/moon.db`. It only
-observes and diagnoses; no model integration or computer-changing actions are included yet.
+The runtime installs at `%LOCALAPPDATA%\Moon\MoonRuntime.exe` and serves locally at `http://127.0.0.1:8765`. Keep it running for live paired-device updates.
 
-`inspect` lists the largest files, subfolders, and file types in a user-owned directory.
-It rejects paths outside the current user's home directory.
+## Privacy and permissions
 
-`propose cleanup-downloads` creates reviewable cleanup proposals only. Execution is disabled.
+Moon runs on the PC it observes. Paired web access is opt-in and uses an outbound HTTPS relay; Moon never opens an inbound internet port on the PC. The paired web view has read-only access to the evidence that the runtime publishes. Sensitive file operations remain local and require a proposal, dry-run preview, explicit approval, separate execution, and verification.
 
-Run `propose cleanup-downloads` first and copy an actual `id` from its `proposals`
-list. Then run `approve ACTUAL_ID DESTINATION`, followed by `execute ACTUAL_ID`.
-Both source and destination must be within the current user's home directory.
-Moon currently offers moves only. Permanent deletion is not implemented or proposed.
-
-Use `dismiss PROPOSAL_ID` to remove an unacted proposal from Moon's local queue.
-
-Run `preview ACTUAL_ID` after approval to validate the move without changing files.
-
-## Local 8B reasoning
-
-Moon uses Ollama as its first replaceable local-model runtime. Install and start
-Ollama with `llama3.1:8b`, then run `python main.py explain-slow --json`.
-The model only explains a fresh read-only investigation; Dera1.4 keeps control of
-tools, permissions, and actions. Set `MOON_MODEL` to use a different Ollama model.
-Use `--debug` with `explain-slow` to inspect a rejected local model response.
-
-### Local AI for installed Moon
-
-The installed runtime opens a setup page with an **Enable local AI** choice. It
-first explains that the recommended model stays on the PC, consumes several GB of
-disk space, and uses additional RAM while active. If Ollama is absent, Moon opens
-the official Ollama installer. Once it is installed, the user explicitly starts
-the model download and sees its preparation progress on the setup page. Moon’s
-diagnostics work without local AI; the model is recommended for natural,
-evidence-grounded conversations.
-
-## Conversational routing
-
-Use `ask` for a small, validated natural-language interface:
-
-```powershell
-python main.py ask "Moon, my computer is slow. Find out why." --json
-```
-
-The model can only select from existing Dera1.4 intents: system status, slow-computer
-investigation, Downloads inspection, Downloads proposal review, and explanation.
-
-## Windows applications and startup
-
-```powershell
-python main.py diagnose applications --json
-python main.py ask "Why does my computer take so long to start?" --json
-```
-
-This read-only diagnostic lists current-user and all-users registry startup entries,
-current-user Startup-folder items, and installed Windows applications.
-
-Use `inspect-startup "ENTRY_NAME"` for metadata on a specific entry, or `propose startup`
-for review-only suggestions. Startup changes are not implemented.
-
-## Application crashes
-
-```powershell
-python main.py investigate crash chrome.exe --json
-```
-
-Moon reads recent Windows Application crash reports for a validated application name.
-It records faulting application/module details as a read-only task.
-
-## Hardware and connectivity
-
-```powershell
-python main.py diagnose hardware --json
-```
-
-Moon reports battery, network-interface, and NVIDIA GPU telemetry where available.
-
-## Proactive monitoring
-
-```powershell
-python main.py monitor check
-```
-
-The first check establishes a local baseline. Later checks compare free storage,
-memory use, and startup entries. Moon reports meaningful changes only and never acts.
-
-## Tests
+## For developers
 
 ```powershell
 python -m pip install -r requirements-dev.txt
 python -m pytest -q
-```
-
-## Local API
-
-```powershell
-python -m pip install -e .[api]
 python run_api.py
 ```
 
-The Dera1.4 API binds only to `http://127.0.0.1:8765`. Open
-`http://127.0.0.1:8765/docs` for the local API documentation. It exposes system
-status, investigations, task history, monitoring, Downloads inspection, and proposal
-preview. Approval and execution are intentionally not exposed over HTTP yet.
+The public web shell is in `frontend/`. The relay uses `Dockerfile.relay`. See [LABNOTE.md](LABNOTE.md) for architecture, deployment, and current limits.
 
-## Device pairing foundation
+## Beta release checklist
 
-The local API has pairing endpoints for a future Moon web client: status, one-time
-code creation, and local pairing completion. Pairing codes expire after ten minutes;
-only token hashes are retained locally. This creates no remote connection and does not
-expose Dera1.4 outside `127.0.0.1`.
+Before publishing a GitHub Release:
 
-## Task history
-
-```powershell
-python main.py tasks --json
-python main.py task "TASK_ID" --json
-python main.py continue-task "TASK_ID" "Show me the Downloads evidence." --json
-```
-
-Follow-ups are stored in the task's local activity history with their validated intent.
+1. Build `installer-output\Moon-Setup.exe` with `installer\build-installer.ps1`.
+2. Test it from a clean Windows profile or second PC: install, start runtime, load dashboard, pair a browser, and verify live CPU/memory/storage values.
+3. Record the version and known limitations in `frontend\release-notes.html`.
+4. Attach `Moon-Setup.exe` and a SHA-256 checksum to the GitHub Release.
+5. Keep `MOON_RELAY_SESSION_SECRET` only in Render; never commit it.
