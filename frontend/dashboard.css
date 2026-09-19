@@ -140,3 +140,4 @@ body::before { content:""; position:fixed; inset:0; opacity:.26; pointer-events:
   .web-pairing-form { grid-template-columns:1fr; }
   .web-pairing-form input,.web-pairing-form button { min-height:41px; font-size:16px; }
 }
+.runtime-download{display:flex!important;justify-content:space-between;align-items:center;width:100%;margin:10px 0 8px;padding:10px 11px!important;border-color:#6f9cf0!important;background:linear-gradient(135deg,#244a85,#19345e)!important;color:#f2f6ff!important;font-size:11px!important;font-weight:700}.runtime-download span{font-size:14px}.runtime-steps{margin:0 0 13px!important;font-size:10px!important;color:#9eb5d5!important}.runtime-steps b{color:#d3e1fb}.public-grid .download-guide{border-color:#547dbb;background:#0f1d33}.public-grid .download-guide a{display:inline-flex;margin-top:10px;color:#bdd5ff;font-weight:700}@media(max-width:680px){.runtime-download{min-height:43px;font-size:13px!important}.runtime-steps{font-size:11px!important}}
