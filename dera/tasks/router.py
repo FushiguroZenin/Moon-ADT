@@ -12,13 +12,14 @@ class IntentRouter:
         "system_status",
         "investigate_slow_computer",
         "inspect_downloads",
+        "inspect_user_folders",
         "review_downloads_proposals",
         "explain_slow_computer",
         "diagnose_startup_applications",
         "investigate_application_crash",
         "unknown",
     }
-    PROMPT = "Classify the user request. Return JSON only: {\"intent\": one allowed intent}. Allowed intents: system_status, investigate_slow_computer, inspect_downloads, review_downloads_proposals, explain_slow_computer, diagnose_startup_applications, investigate_application_crash, unknown. Do not include tools, paths, arguments, actions, or explanations."
+    PROMPT = "Classify the user request. Return JSON only: {\"intent\": one allowed intent}. Allowed intents: system_status, investigate_slow_computer, inspect_downloads, inspect_user_folders, review_downloads_proposals, explain_slow_computer, diagnose_startup_applications, investigate_application_crash, unknown. Do not include tools, paths, arguments, actions, or explanations."
 
     def __init__(self, provider: ModelProvider) -> None:
         self.provider = provider
@@ -37,12 +38,13 @@ class IntentRouter:
     @staticmethod
     def _fallback(request: str) -> str:
         text = request.lower()
-        startup_terms = ("startup", "start up", "boot", "booting", "launch at login", "launches at login", "open on startup", "start when i", "takes forever to start", "slow to start", "slow boot")
-        crash_terms = ("crash", "crashes", "crashing", "keeps closing", "kept closing", "closed unexpectedly", "stopped working", "app closed")
+        startup_terms = ("startup", "start up", "boot", "booting", "launch at login", "launches at login", "open on startup", "start when i", "takes forever to start", "take forever to start", "take so long to start", "takes so long to start", "slow to start", "slow boot")
+        crash_terms = ("crash", "crashes", "crashing", "keeps closing", "kept closing", "closed unexpectedly", "close unexpectedly", "stopped working", "app closed")
         slow_terms = ("slow", "sluggish", "lag", "laggy", "stutter", "freez", "unresponsive", "performance", "takes forever", "hanging", "hangs", "running badly")
         explain_terms = ("explain", "what does this mean", "simpler", "break this down", "help me understand", "tell me more")
         proposal_terms = ("clean up", "cleanup", "free space", "clear space", "make space", "move files", "move folders", "what can i remove", "what can i move")
         downloads_terms = ("downloads", "download folder", "downloaded files", "large files")
+        folder_terms = ("largest folder", "largest folders", "biggest folder", "biggest folders", "which folder is biggest", "which folders are biggest", "what is taking space", "what is taking up space", "what's taking space", "what takes up space", "large folder", "large folders", "disk usage")
         status_terms = ("system status", "computer status", "what is using my ram", "what's using my ram", "what is eating memory", "what's eating memory", "memory", "ram", "cpu", "processor", "battery", "network", "disk space", "storage")
         if any(term in text for term in startup_terms):
             return "diagnose_startup_applications"
@@ -56,6 +58,8 @@ class IntentRouter:
             return "investigate_slow_computer"
         if any(term in text for term in downloads_terms):
             return "inspect_downloads"
+        if any(term in text for term in folder_terms):
+            return "inspect_user_folders"
         if any(term in text for term in status_terms):
             return "system_status"
         return "unknown"

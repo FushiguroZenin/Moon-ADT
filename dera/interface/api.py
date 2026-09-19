@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import json
 from urllib.error import URLError
+import socket
 from urllib.request import Request, urlopen
 
 from dera.diagnostics.monitor import Monitor
@@ -20,6 +21,7 @@ from dera.memory.task_store import TaskStore
 from dera.permissions.ledger import PermissionLedger
 from dera.system.directory_inspector import DirectoryInspector
 from dera.system.observer import SystemObserver
+from dera.system.startup_preference import StartupPreference
 from dera.tasks.cleanup_proposals import CleanupProposalPlanner
 from dera.tasks.slow_computer import SlowComputerInvestigation
 from dera.tasks.router import IntentRouter
@@ -152,6 +154,10 @@ class MonitoringConfig(BaseModel):
     interval_minutes: int = 30
 
 
+class StartupPreferenceConfig(BaseModel):
+    enabled: bool
+
+
 class RelayConfig(BaseModel):
     relay_url: str | None = None
     enabled: bool = False
@@ -217,7 +223,14 @@ def _pull_local_model(provider: OllamaProvider) -> None:
                     return
         _ai_download_state.update({"state": "complete", "status": "Moon’s local AI is ready.", "error": None})
     except (URLError, OSError, ValueError, json.JSONDecodeError) as error:
-        _ai_download_state.update({"state": "failed", "status": "Moon could not download the local AI.", "error": str(error)})
+        reason = str(error)
+        dns_failure = isinstance(error, socket.gaierror) or "no such host" in reason.lower() or "name or service not known" in reason.lower()
+        detail = (
+            "Moon could not reach Ollama’s model download service. Check your internet or DNS connection, try another network if available, then retry."
+            if dns_failure
+            else "Moon could not download the local AI. Check your internet connection, then retry."
+        )
+        _ai_download_state.update({"state": "failed", "status": detail, "error": "Network name lookup failed." if dns_failure else reason[:240]})
     finally:
         _ai_download_lock.clear()
 
@@ -292,7 +305,16 @@ def local_settings() -> dict:
         "monitoring": {"mode": "manual local checks", "description": "Moon does not run a background scheduler or send notifications yet."},
         "permissions": {"description": "Moon requires a proposal, explicit approval, validation, and a separate execution step before a change."},
         "relay": RelayStore().get(),
+        "startup": StartupPreference().status(),
     }
+
+
+@app.post("/settings/start-with-windows")
+def update_start_with_windows(body: StartupPreferenceConfig) -> dict:
+    try:
+        return StartupPreference().set_enabled(body.enabled)
+    except RuntimeError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
 
 
 @app.get("/relay/settings")
@@ -365,6 +387,8 @@ def ask_moon(body: AskRequest) -> dict:
             result = {"task": task.to_dict(), "application": application}
     elif intent == "inspect_downloads":
         result = {"inspection": DirectoryInspector().inspect(Path.home() / "Downloads")}
+    elif intent == "inspect_user_folders":
+        result = {"inspection": DirectoryInspector().inspect(Path.home())}
     elif intent == "review_downloads_proposals":
         proposals = [proposal.to_dict() for proposal in CleanupProposalPlanner().for_downloads()]
         PermissionLedger().save_proposals(proposals)
@@ -421,6 +445,8 @@ def continue_task_conversation(task_id: str, body: TaskFollowUp) -> dict:
             evidence = {"task": ApplicationCrashInvestigation().run(application).to_dict(), "application": application}
     elif intent == "inspect_downloads":
         evidence = {"inspection": DirectoryInspector().inspect(Path.home() / "Downloads")}
+    elif intent == "inspect_user_folders":
+        evidence = {"inspection": DirectoryInspector().inspect(Path.home())}
     elif intent == "review_downloads_proposals":
         proposals = [proposal.to_dict() for proposal in CleanupProposalPlanner().for_downloads()]
         PermissionLedger().save_proposals(proposals)
@@ -480,6 +506,11 @@ def monitor_events() -> dict:
 def inspect_downloads() -> dict:
     from pathlib import Path
     return DirectoryInspector().inspect(Path.home() / "Downloads")
+
+
+@app.get("/folders/inspection")
+def inspect_user_folders() -> dict:
+    return DirectoryInspector().inspect(Path.home())
 
 
 @app.get("/proposals/downloads")

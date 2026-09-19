@@ -31,3 +31,9 @@ def test_crash_language_routes_to_the_read_only_crash_investigation() -> None:
     router = IntentRouter(Model())
     assert router.route("Chrome keeps crashing") == "investigate_application_crash"
     assert router.route("Why did Discord close unexpectedly?") == "investigate_application_crash"
+
+
+def test_largest_folder_language_routes_to_read_only_home_inspection() -> None:
+    router = IntentRouter(Model())
+    assert router.route("What is my biggest folder?") == "inspect_user_folders"
+    assert router.route("What is taking up space on my PC?") == "inspect_user_folders"
